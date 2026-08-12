@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sistem Informasi Kas & Program Perumahan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+    }
+    .soft-a { background-color: #f0f7ff; }
+    .soft-b { background-color: #f0fdf4; }
+    .soft-c { background-color: #fffbeb; }
+    .soft-d { background-color: #faf5ff; }
+    .soft-e { background-color: #fefce8; }
+    .soft-f { background-color: #fdf2f8; }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col md:flex-row overflow-x-hidden">
+
+  <!-- OVERLAY BACKDROP MOBILE -->
+  <div id="sidebar-backdrop" onclick="closeSidebarMobile()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden transition-opacity duration-300"></div>
+
+  <!-- SIDEBAR (RESPONSIVE DRAWER) -->
+  <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-72 md:w-64 bg-slate-900 text-white flex flex-col shadow-2xl md:shadow-none transform -translate-x-full md:translate-x-0 transition-all duration-300 ease-in-out shrink-0">
+    <div class="p-4 md:p-5 border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-md shadow-indigo-600/30">
+          <i class="fa-solid fa-building-user text-lg"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-base leading-tight">SALVA Residence</h1>
+          <p class="text-[11px] text-slate-400">Portal Kas & Program RT</p>
+        </div>
+      </div>
+      <button onclick="closeSidebarMobile()" class="md:hidden text-slate-400 hover:text-white p-2 rounded-lg">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+    </div>
+
+    <!-- MENU NAVIGASI -->
+    <nav class="flex-1 p-3 md:p-4 space-y-1.5 overflow-y-auto">
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs md:text-sm font-medium transition-all duration-200 bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
+        <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+        <span>Dashboard & Program</span>
+      </button>
+      <button onclick="switchTab('pemasukan')" id="nav-pemasukan" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs md:text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200">
+        <i class="fa-solid fa-hand-holding-dollar w-5 text-center"></i>
+        <span>Pemasukan Kas</span>
+      </button>
+      <button onclick="switchTab('pengeluaran')" id="nav-pengeluaran" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs md:text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200">
+        <i class="fa-solid fa-file-invoice-dollar w-5 text-center"></i>
+        <span>Pengeluaran & Buku Kas</span>
+      </button>
+    </nav>
+
+    <!-- STATUS LOGIN ADMIN -->
+    <div class="p-4 border-t border-slate-800 bg-slate-950/60">
+      <div id="admin-logged-out" class="flex flex-col gap-2">
+        <span class="text-[11px] text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-eye text-indigo-400"></i> Mode Pengunjung</span>
+        <button onclick="openModal('modal-login')" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2.5 px-3 rounded-xl border border-slate-700 transition">
+          <i class="fa-solid fa-lock mr-1.5"></i> Login Admin
+        </button>
+      </div>
+      <div id="admin-logged-in" class="hidden flex flex-col gap-2">
+        <span class="text-xs text-emerald-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-user-shield"></i> Admin Aktif</span>
+        <button onclick="logoutAdmin()" class="w-full bg-rose-900/40 hover:bg-rose-900/70 text-rose-300 text-xs font-semibold py-2 px-3 rounded-xl border border-rose-800/80 transition">
+          <i class="fa-solid fa-arrow-right-from-bracket mr-1.5"></i> Logout
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+    <header class="bg-white border-b border-slate-200 px-4 md:px-8 py-3.5 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+      <div class="flex items-center gap-3 min-w-0">
+        <button onclick="toggleSidebarMobile()" class="p-2 -ml-1 rounded-xl text-slate-700 hover:bg-slate-100 md:hidden transition focus:outline-none">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+        <button onclick="toggleSidebarDesktop()" class="hidden md:flex p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition focus:outline-none" title="Sembunyikan/Tampilkan Sidebar">
+          <i class="fa-solid fa-bars-staggered text-lg"></i>
+        </button>
+        <h2 id="page-title" class="text-sm sm:text-base md:text-xl font-bold text-slate-800 truncate">
+          Dashboard Program Kerja & Kas
+        </h2>
+      </div>
+      <div class="flex items-center gap-3">
+        <div id="db-status-badge" class="hidden sm:flex text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm border"></div>
+        <span id="current-date" class="hidden sm:inline-block text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200"></span>
+      </div>
+    </header>
+
+    <main class="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
+      <!-- RINGKASAN KAS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div class="bg-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider text-slate-400">Total Pemasukan</p>
+            <h3 id="stat-masuk" class="text-lg sm:text-xl md:text-2xl font-black text-emerald-600 mt-1">Rp 0</h3>
+          </div>
+          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl shrink-0"><i class="fa-solid fa-wallet text-xl sm:text-2xl"></i></div>
+        </div>
+        <div class="bg-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider text-slate-400">Total Pengeluaran</p>
+            <h3 id="stat-keluar" class="text-lg sm:text-xl md:text-2xl font-black text-rose-600 mt-1">Rp 0</h3>
+          </div>
+          <div class="p-3 bg-rose-50 text-rose-600 rounded-xl shrink-0"><i class="fa-solid fa-arrow-up-right-from-square text-xl sm:text-2xl"></i></div>
+        </div>
+        <div class="bg-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between sm:col-span-2 lg:col-span-1">
+          <div>
+            <p class="text-[11px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider text-slate-400">Saldo Kas Saat Ini</p>
+            <h3 id="stat-saldo" class="text-lg sm:text-xl md:text-2xl font-black text-indigo-600 mt-1">Rp 0</h3>
+          </div>
+          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl shrink-0"><i class="fa-solid fa-coins text-xl sm:text-2xl"></i></div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: DASHBOARD & PROGRAM SIDEBAR -->
+      <section id="section-dashboard" class="space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="grid grid-cols-1 md:grid-cols-12 min-h-[450px]">
+            <!-- LEFT PANEL: PROGRAM SIDEBAR -->
+            <div class="md:col-span-4 border-r border-slate-200 bg-slate-50/50 flex flex-col">
+              <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                  <i class="fa-solid fa-list-check text-indigo-600"></i> Daftar Program Kerja
+                </h3>
+                <button onclick="openAddProgramModal()" class="admin-only hidden bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold py-1.5 px-2.5 rounded-lg transition shadow-sm flex items-center gap-1">
+                  <i class="fa-solid fa-plus text-[10px]"></i> Tambah
+                </button>
+              </div>
+              <div id="program-sidebar-list" class="flex-1 overflow-y-auto p-3 space-y-2 max-h-[300px] md:max-h-[500px]">
+                <!-- Dapatkan data dari script -->
+              </div>
+            </div>
+
+            <!-- RIGHT PANEL: PROGRAM DETAIL VIEW -->
+            <div id="program-detail-view" class="md:col-span-8 p-6 md:p-8 flex flex-col justify-between bg-white">
+              <div class="flex flex-col items-center justify-center text-center h-full text-slate-400 py-12">
+                <i class="fa-solid fa-circle-info text-4xl text-slate-300 mb-3"></i>
+                <p class="text-sm font-medium">Pilih program di sidebar untuk melihat detail pelaksanaan, panitia, dan anggaran.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: PEMASUKAN -->
+      <section id="section-pemasukan" class="hidden space-y-4 sm:space-y-6">
+        <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h3 class="text-sm sm:text-base font-bold text-slate-800">Catatan Pemasukan Kas Warga</h3>
+            <button onclick="openAddPemasukanModal()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto shrink-0">
+              <i class="fa-solid fa-plus"></i> Input Iuran Warga
+            </button>
+          </div>
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-xs sm:text-sm text-left min-w-[600px]">
+              <thead class="text-[11px] sm:text-xs uppercase bg-slate-800 text-white">
+                <!-- Head di-render dinamis -->
+              </thead>
+              <tbody id="pemasukan-table-body" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: PENGELUARAN -->
+      <section id="section-pengeluaran" class="hidden space-y-4 sm:space-y-6">
+        <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h3 class="text-sm sm:text-base font-bold text-slate-800">Buku Kas Keluar & Masuk</h3>
+            <button onclick="openAddPengeluaranModal()" class="admin-only hidden bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto shrink-0">
+              <i class="fa-solid fa-plus"></i> Catat Transaksi Kas
+            </button>
+          </div>
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-xs sm:text-sm text-left min-w-[650px]">
+              <thead class="text-[11px] sm:text-xs uppercase bg-slate-800 text-white">
+                <!-- Head di-render dinamis -->
+              </thead>
+              <tbody id="pengeluaran-table-body" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL LOGIN -->
+  <div id="modal-login" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border max-w-sm w-full p-5 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fa-solid fa-user-shield text-indigo-600 mr-2"></i> Login Admin</h3>
+        <button onclick="closeModal('modal-login')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleLogin(event)" class="space-y-3">
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Username</label>
+          <input type="text" id="login-user" required class="w-full mt-1 p-2.5 text-sm border rounded-xl bg-slate-50">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Password</label>
+          <input type="password" id="login-pass" required class="w-full mt-1 p-2.5 text-sm border rounded-xl bg-slate-50">
+        </div>
+        <p id="login-error" class="text-xs text-rose-600 hidden font-medium"></p>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold py-2.5 rounded-xl transition shadow-md shadow-indigo-600/10">
+          Masuk Administrator
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PROGRAM -->
+  <div id="modal-program" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border max-w-md w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="modal-program-title" class="font-bold text-slate-800 text-sm sm:text-base">Form Program Kerja</h3>
+        <button onclick="closeModal('modal-program')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="saveProgramForm(event)" class="space-y-3">
+        <input type="hidden" id="prog-id">
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Nama Program</label>
+          <input type="text" id="prog-nama" required class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Deskripsi</label>
+          <textarea id="prog-deskripsi" rows="3" class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition"></textarea>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Waktu Pelaksanaan</label>
+          <input type="text" id="prog-pelaksanaan" placeholder="Contoh: 17 Agustus 2026" class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Panitia / Penanggung Jawab</label>
+          <input type="text" id="prog-panitia" placeholder="Contoh: Budi (Ketua), Siti (Sekretaris)" class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Anggaran (Rp)</label>
+          <input type="number" id="prog-anggaran" required class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold py-2.5 rounded-xl transition shadow-md shadow-indigo-600/10 mt-2">
+          Simpan Program
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PEMASUKAN -->
+  <div id="modal-pemasukan" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border max-w-md w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="modal-pemasukan-title" class="font-bold text-slate-800 text-sm sm:text-base">Form Input Iuran Warga</h3>
+        <button onclick="closeModal('modal-pemasukan')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="savePemasukanForm(event)" class="space-y-3">
+        <input type="hidden" id="in-id">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Blok</label>
+            <input type="text" id="in-blok" placeholder="A" required class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition uppercase">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-600">No. Rumah</label>
+            <input type="text" id="in-norumah" placeholder="12" required class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Nama Warga</label>
+          <input type="text" id="in-nama" required class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Nominal (Rp)</label>
+            <input type="number" id="in-nominal" required class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Tanggal Iuran</label>
+            <input type="date" id="in-tanggal" required class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Catatan / Metode</label>
+          <input type="text" id="in-catatan" placeholder="Transfer BCA / Cash" class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold py-2.5 rounded-xl transition shadow-md shadow-emerald-600/10 mt-2">
+          Simpan Iuran Warga
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PENGELUARAN -->
+  <div id="modal-pengeluaran" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border max-w-md w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="modal-pengeluaran-title" class="font-bold text-slate-800 text-sm sm:text-base">Form Transaksi Kas</h3>
+        <button onclick="closeModal('modal-pengeluaran')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="savePengeluaranForm(event)" class="space-y-3">
+        <input type="hidden" id="out-id">
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Tanggal Transaksi</label>
+          <input type="date" id="out-tanggal" required class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Deskripsi / Keterangan</label>
+          <input type="text" id="out-deskripsi" placeholder="Contoh: Pembelian Lampu Jalan" required class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Debet (Masuk Rp)</label>
+            <input type="number" id="out-debet" value="0" class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Kredit (Keluar Rp)</label>
+            <input type="number" id="out-kredit" value="0" class="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition">
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-semibold py-2.5 rounded-xl transition shadow-md shadow-rose-600/10 mt-2">
+          Simpan Transaksi Kas
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ⚠️ MASUKKAN URL GOOGLE APPS SCRIPT HASIL DEPLOY ANDA DI SINI
+    // Jika dikosongkan atau tetap default, aplikasi otomatis menggunakan mode Mock Lokal Database (LocalStorage)
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxVDnbDymKQsdaYp3bDMizLhD_wTkH3PLjo_bxwNed6kp79B-y_NIdG_kB8io0vVgJB/exec";
+
+    let isAdmin = false;
+    let selectedProgramId = null;
+    let globalPrograms = [];
+    let globalPemasukan = [];
+    let globalPemasukanOptions = [];
+    let globalPengeluaran = [];
+    let currentFilteredBlok = "ALL";
+
+    const colorMap = {};
+    const softColors = ['soft-a', 'soft-b', 'soft-c', 'soft-d', 'soft-e', 'soft-f'];
+
+    // Validasi URL Web App
+    function isValidUrl(string) {
+      try {
+        const url = new URL(string);
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch (_) {
+        return false;
+      }
+    }
+
+    let forceLocalMode = !isValidUrl(GAS_API_URL) || GAS_API_URL.includes("PASTE_URL_WEB_APP") || GAS_API_URL.includes("PASTE_URL");
+
+    // Local Storage Mock Database Handler
+    const localDB = {
+      init() {
+        if (!localStorage.getItem('db_programs')) {
+          localStorage.setItem('db_programs', JSON.stringify([
+            { id: "PROG-1", nama: "HUT RI ke-81", deskripsi: "Peringatan HUT RI ke-81 tingkat RT dengan berbagai lomba anak-anak, panggung gembira, jalan sehat, dan malam tirakatan warga.", pelaksanaan: "17 Agustus 2026", panitia: "Budi (Ketua), Siti (Sekretaris)", anggaran: 2500000 },
+            { id: "PROG-2", nama: "Fogging DBD Perumahan", deskripsi: "Fogging massal di seluruh area perumahan Salva Residence guna mencegah penyebaran nyamuk demam berdarah pasca musim hujan.", pelaksanaan: "25 Agustus 2026", panitia: "Adi (PJ Kebersihan)", anggaran: 1200000 },
+            { id: "PROG-3", nama: "Siskamling & Peremajaan CCTV", deskripsi: "Pengecatan ulang pos keamanan utama, peremajaan perangkat pos ronda, serta instalasi penambahan unit kamera CCTV di 3 titik gang buta.", pelaksanaan: "September 2026", panitia: "Rudi (Sie Keamanan)", anggaran: 4500000 }
+          ]));
+        }
+        if (!localStorage.getItem('db_pemasukan')) {
+          localStorage.setItem('db_pemasukan', JSON.stringify([
+            { id: "IN-1", blok: "A", noRumah: "12", nama: "Farhan", nominal: 100000, tanggal: "2026-08-01", catatan: "Transfer Mandiri" },
+            { id: "IN-2", blok: "A", noRumah: "05", nama: "Diana", nominal: 100000, tanggal: "2026-08-02", catatan: "Cash" },
+            { id: "IN-3", blok: "B", noRumah: "03", nama: "Joko", nominal: 100000, tanggal: "2026-08-03", catatan: "Transfer BCA" },
+            { id: "IN-4", blok: "C", noRumah: "15", nama: "Rahmat", nominal: 100000, tanggal: "2026-08-04", catatan: "Cash" },
+            { id: "IN-5", blok: "B", noRumah: "08", nama: "Susi", nominal: 100000, tanggal: "2026-08-05", catatan: "Transfer BRI" }
+          ]));
+        }
+        if (!localStorage.getItem('db_pengeluaran')) {
+          localStorage.setItem('db_pengeluaran', JSON.stringify([
+            { id: "OUT-1", tanggal: "2026-08-01", deskripsi: "Saldo Awal Kas RT", debet: 1500000, kredit: 0 },
+            { id: "OUT-2", tanggal: "2026-08-04", deskripsi: "Konsumsi Rapat Panitia HUT RI", debet: 0, kredit: 150000 },
+            { id: "OUT-3", tanggal: "2026-08-06", deskripsi: "Pembelian Bohlam Lampu Jalan Gang B", debet: 0, kredit: 250000 }
+          ]));
+        }
+      },
+      getDashboardData() {
+        this.init();
+        const progs = JSON.parse(localStorage.getItem('db_programs'));
+        const pem = JSON.parse(localStorage.getItem('db_pemasukan'));
+        const peng = JSON.parse(localStorage.getItem('db_pengeluaran'));
+
+        let totalIuran = 0;
+        pem.forEach(p => totalIuran += Number(p.nominal) || 0);
+
+        let totalDebet = 0;
+        let totalKredit = 0;
+        peng.forEach(p => {
+          totalDebet += Number(p.debet) || 0;
+          totalKredit += Number(p.kredit) || 0;
+        });
+
+        return {
+          summary: {
+            totalIuranWarga: totalIuran + totalDebet,
+            totalPengeluaran: totalKredit,
+            saldoKas: (totalIuran + totalDebet) - totalKredit
+          },
+          programs: progs
+        };
+      },
+      getPemasukanData(selectedBlok) {
+        this.init();
+        const pem = JSON.parse(localStorage.getItem('db_pemasukan'));
+        const optionsBlok = new Set();
+        const list = [];
+
+        pem.forEach(p => {
+          const cleanBlok = String(p.blok || "").trim().replace(/^blok\s*/i, "");
+          if (cleanBlok) optionsBlok.add(cleanBlok);
+
+          if (!selectedBlok || selectedBlok === "ALL" || selectedBlok.toUpperCase() === cleanBlok.toUpperCase()) {
+            list.push(p);
+          }
+        });
+
+        return {
+          optionsBlok: Array.from(optionsBlok).sort(),
+          list: list
+        };
+      },
+      getPengeluaranData() {
+        this.init();
+        const peng = JSON.parse(localStorage.getItem('db_pengeluaran'));
+        peng.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+
+        let runningSaldo = 0;
+        const list = peng.map(p => {
+          runningSaldo += (Number(p.debet) || 0) - (Number(p.kredit) || 0);
+          return {
+            ...p,
+            saldo: runningSaldo
+          };
+        });
+
+        return list.reverse();
+      },
+      saveProgram(data) {
+        this.init();
+        const progs = JSON.parse(localStorage.getItem('db_programs'));
+        if (data.id) {
+          const idx = progs.findIndex(p => p.id === data.id);
+          if (idx !== -1) {
+            progs[idx] = { ...data, anggaran: Number(data.anggaran) };
+          }
+        } else {
+          data.id = "PROG-" + Date.now();
+          progs.push({ ...data, anggaran: Number(data.anggaran) });
+        }
+        localStorage.setItem('db_programs', JSON.stringify(progs));
+        return { success: true, message: "Program berhasil disimpan!" };
+      },
+      deleteProgram(id) {
+        this.init();
+        let progs = JSON.parse(localStorage.getItem('db_programs'));
+        progs = progs.filter(p => p.id !== id);
+        localStorage.setItem('db_programs', JSON.stringify(progs));
+        return { success: true, message: "Program berhasil dihapus!" };
+      },
+      savePemasukan(data) {
+        this.init();
+        const pem = JSON.parse(localStorage.getItem('db_pemasukan'));
+        if (data.id) {
+          const idx = pem.findIndex(p => p.id === data.id);
+          if (idx !== -1) {
+            pem[idx] = { ...data, nominal: Number(data.nominal) };
+          }
+        } else {
+          data.id = "IN-" + Date.now();
+          pem.push({ ...data, nominal: Number(data.nominal) });
+        }
+        localStorage.setItem('db_pemasukan', JSON.stringify(pem));
+        return { success: true, message: "Pemasukan berhasil disimpan!" };
+      },
+      deletePemasukan(id) {
+        this.init();
+        let pem = JSON.parse(localStorage.getItem('db_pemasukan'));
+        pem = pem.filter(p => p.id !== id);
+        localStorage.setItem('db_pemasukan', JSON.stringify(pem));
+        return { success: true, message: "Pemasukan berhasil dihapus!" };
+      },
+      savePengeluaran(data) {
+        this.init();
+        const peng = JSON.parse(localStorage.getItem('db_pengeluaran'));
+        if (data.id) {
+          const idx = peng.findIndex(p => p.id === data.id);
+          if (idx !== -1) {
+            peng[idx] = { ...data, debet: Number(data.debet), kredit: Number(data.kredit) };
+          }
+        } else {
+          data.id = "OUT-" + Date.now();
+          peng.push({ ...data, debet: Number(data.debet), kredit: Number(data.kredit) });
+        }
+        localStorage.setItem('db_pengeluaran', JSON.stringify(peng));
+        return { success: true, message: "Pengeluaran berhasil disimpan!" };
+      },
+      deletePengeluaran(id) {
+        this.init();
+        let peng = JSON.parse(localStorage.getItem('db_pengeluaran'));
+        peng = peng.filter(p => p.id !== id);
+        localStorage.setItem('db_pengeluaran', JSON.stringify(peng));
+        return { success: true, message: "Pengeluaran berhasil dihapus!" };
+      }
+    };
+
+    // API Helpers
+    async function apiGet(action, params = {}) {
+      updateStatusBadge();
+      if (forceLocalMode) {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            if (action === "getDashboardData") resolve(localDB.getDashboardData());
+            if (action === "getPemasukanData") resolve(localDB.getPemasukanData(params.blok));
+            if (action === "getPengeluaranData") resolve(localDB.getPengeluaranData());
+          }, 150);
+        });
+      }
+
+      try {
+        const url = new URL(GAS_API_URL);
+        url.searchParams.append('action', action);
+        for (const k in params) url.searchParams.append(k, params[k]);
+        const res = await fetch(url.toString(), { redirect: 'follow' });
+        return await res.json();
+      } catch (err) {
+        console.error("Koneksi Apps Script Gagal, menggunakan penyimpanan lokal:", err);
+        forceLocalMode = true;
+        updateStatusBadge();
+        return apiGet(action, params);
+      }
+    }
+
+    async function apiPost(action, data = {}) {
+      updateStatusBadge();
+      if (forceLocalMode) {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            if (action === "checkLogin") {
+              if (data.username === "admin" && data.password === "admin123") {
+                resolve({ success: true });
+              } else {
+                resolve({ success: false, message: "Username/Password salah!" });
+              }
+            }
+            if (action === "simpanProgram") resolve(localDB.saveProgram(data.data));
+            if (action === "hapusProgram") resolve(localDB.deleteProgram(data.id));
+            if (action === "simpanPemasukan") resolve(localDB.savePemasukan(data.data));
+            if (action === "hapusPemasukan") resolve(localDB.deletePemasukan(data.id));
+            if (action === "simpanPengeluaran") resolve(localDB.savePengeluaran(data.data));
+            if (action === "hapusPengeluaran") resolve(localDB.deletePengeluaran(data.id));
+          }, 150);
+        });
+      }
+
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: 'POST',
+          redirect: 'follow',
+          body: JSON.stringify({ action, ...data })
+        });
+        return await res.json();
+      } catch (err) {
+        console.error("Koneksi Apps Script Gagal, menggunakan penyimpanan lokal:", err);
+        forceLocalMode = true;
+        updateStatusBadge();
+        return apiPost(action, data);
+      }
+    }
+
+    function toggleDatabaseMode() {
+      if (isValidUrl(GAS_API_URL)) {
+        forceLocalMode = !forceLocalMode;
+        updateStatusBadge();
+        alert(forceLocalMode ? "Beralih ke Mode Demo (Penyimpanan Lokal)" : "Beralih ke Database Google Sheets (Cloud)");
+        const activeTab = document.querySelector('nav button.bg-indigo-600').id.replace('nav-', '');
+        switchTab(activeTab);
+      } else {
+        alert("GAS_API_URL belum dikonfigurasi dengan URL Apps Script yang valid. Mode Lokal diwajibkan.");
+      }
+    }
+
+    function updateStatusBadge() {
+      const badge = document.getElementById('db-status-badge');
+      if (!badge) return;
+      if (forceLocalMode) {
+        badge.className = "bg-amber-100 text-amber-800 shadow-sm border border-amber-200 px-3 py-1.5 rounded-full text-[11px] font-bold flex items-center gap-1.5 cursor-pointer";
+        badge.innerHTML = `<span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span> Demo (Lokal)`;
+        badge.title = "Klik untuk beralih jika URL Apps Script valid";
+        badge.setAttribute("onclick", "toggleDatabaseMode()");
+      } else {
+        badge.className = "bg-emerald-100 text-emerald-800 shadow-sm border border-emerald-200 px-3 py-1.5 rounded-full text-[11px] font-bold flex items-center gap-1.5 cursor-pointer";
+        badge.innerHTML = `<span class="h-2 w-2 rounded-full bg-emerald-500"></span> Google Sheets`;
+        badge.title = "Klik untuk beralih ke Database Lokal (Offline)";
+        badge.setAttribute("onclick", "toggleDatabaseMode()");
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+      updateStatusBadge();
+      loadDashboardData();
+      checkSavedAdminSession();
+    });
+
+    function toggleSidebarMobile() {
+      document.getElementById('sidebar').classList.remove('-translate-x-full');
+      document.getElementById('sidebar-backdrop').classList.remove('hidden');
+    }
+    function closeSidebarMobile() {
+      document.getElementById('sidebar').classList.add('-translate-x-full');
+      document.getElementById('sidebar-backdrop').classList.add('hidden');
+    }
+    function toggleSidebarDesktop() {
+      document.getElementById('sidebar').classList.toggle('md:hidden');
+    }
+    function formatRupiah(num) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num || 0);
+    }
+    function formatDateIndo(dateStr) {
+      if (!dateStr || dateStr === "-") return "-";
+      try {
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+          return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        const d = new Date(dateStr);
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+      } catch (e) {}
+      return dateStr;
+    }
+
+    function switchTab(tab) {
+      closeSidebarMobile();
+      document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+      document.querySelectorAll('nav button').forEach(b => {
+        b.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/20');
+        b.classList.add('text-slate-300');
+      });
+
+      document.getElementById(`section-${tab}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`nav-${tab}`);
+      activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/20');
+      activeBtn.classList.remove('text-slate-300');
+
+      const titles = {
+        'dashboard': 'Dashboard Program Kerja & Kas',
+        'pemasukan': 'Informasi Pemasukan Kas Warga',
+        'pengeluaran': 'Buku Kas Keluar & Masuk'
+      };
+      document.getElementById('page-title').innerText = titles[tab];
+
+      if (tab === 'dashboard') loadDashboardData();
+      if (tab === 'pemasukan') loadPemasukanData();
+      if (tab === 'pengeluaran') loadPengeluaranData();
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    // Admin Authentication
+    async function handleLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('login-user').value;
+      const pass = document.getElementById('login-pass').value;
+
+      const res = await apiPost('checkLogin', { username: user, password: pass });
+      if (res.success) {
+        isAdmin = true;
+        sessionStorage.setItem('adminUser', user);
+        updateAdminUI();
+        closeModal('modal-login');
+      } else {
+        const err = document.getElementById('login-error');
+        err.innerText = res.message;
+        err.classList.remove('hidden');
+      }
+    }
+
+    function checkSavedAdminSession() {
+      if (sessionStorage.getItem('adminUser')) {
+        isAdmin = true;
+        updateAdminUI();
+      }
+    }
+
+    function logoutAdmin() {
+      isAdmin = false;
+      sessionStorage.removeItem('adminUser');
+      updateAdminUI();
+    }
+
+    function updateAdminUI() {
+      const loggedOut = document.getElementById('admin-logged-out');
+      const loggedIn = document.getElementById('admin-logged-in');
+      if (isAdmin) {
+        loggedOut.classList.add('hidden');
+        loggedIn.classList.remove('hidden');
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+      } else {
+        loggedOut.classList.remove('hidden');
+        loggedIn.classList.add('hidden');
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+      }
+
+      // Re-render UI elements to adjust for Admin privileges
+      renderProgramDetail();
+      
+      const isPemActive = !document.getElementById('section-pemasukan').classList.contains('hidden');
+      if (isPemActive) renderPemasukanTable();
+
+      const isPengActive = !document.getElementById('section-pengeluaran').classList.contains('hidden');
+      if (isPengActive) renderPengeluaranTable();
+    }
+
+    // 1. DASHBOARD & SIDEBAR PROGRAM
+    async function loadDashboardData() {
+      const res = await apiGet('getDashboardData');
+      if (res.summary) {
+        document.getElementById('stat-masuk').innerText = formatRupiah(res.summary.totalIuranWarga);
+        document.getElementById('stat-keluar').innerText = formatRupiah(res.summary.totalPengeluaran);
+        document.getElementById('stat-saldo').innerText = formatRupiah(res.summary.saldoKas);
+
+        globalPrograms = res.programs || [];
+        renderProgramSidebar();
+      }
+    }
+
+    function renderProgramSidebar() {
+      const sidebar = document.getElementById('program-sidebar-list');
+      sidebar.innerHTML = '';
+
+      if (globalPrograms.length === 0) {
+        sidebar.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Belum ada program kerja.</p>`;
+        document.getElementById('program-detail-view').innerHTML = `
+          <div class="flex flex-col items-center justify-center text-center h-full text-slate-400 py-12">
+            <i class="fa-solid fa-circle-info text-4xl text-slate-300 mb-3"></i>
+            <p class="text-sm font-medium">Belum ada program kerja yang terdaftar.</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (!selectedProgramId && globalPrograms.length > 0) {
+        selectedProgramId = globalPrograms[0].id;
+      }
+
+      globalPrograms.forEach(p => {
+        const isActive = p.id === selectedProgramId;
+        const btnClass = isActive 
+          ? 'w-full text-left p-3.5 rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20 font-semibold border border-indigo-600 transition duration-200' 
+          : 'w-full text-left p-3.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-medium border border-slate-200 shadow-sm transition duration-200';
+        
+        sidebar.innerHTML += `
+          <button onclick="selectProgram('${p.id}')" class="${btnClass}">
+            <div class="flex items-start justify-between gap-2">
+              <span class="text-xs sm:text-sm truncate mr-1">${p.nama}</span>
+              <span class="text-[10px] font-bold shrink-0 ${isActive ? 'bg-indigo-700 text-white' : 'bg-slate-150 text-slate-600'} px-2 py-0.5 rounded-md">${formatRupiah(p.anggaran)}</span>
+            </div>
+          </button>
+        `;
+      });
+
+      renderProgramDetail();
+    }
+
+    function selectProgram(id) {
+      selectedProgramId = id;
+      renderProgramSidebar();
+    }
+
+    function renderProgramDetail() {
+      const detailContainer = document.getElementById('program-detail-view');
+      const p = globalPrograms.find(prog => prog.id === selectedProgramId);
+
+      if (!p) {
+        detailContainer.innerHTML = `
+          <div class="flex flex-col items-center justify-center text-center h-full text-slate-400 py-12">
+            <i class="fa-solid fa-circle-info text-4xl text-slate-300 mb-3"></i>
+            <p class="text-sm font-medium">Pilih program di sidebar untuk melihat detail.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const adminControls = isAdmin ? `
+        <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+          <button onclick="editProgram('${p.id}')" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-bold py-2.5 px-4 rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-pen-to-square text-[11px]"></i> Edit Program
+          </button>
+          <button onclick="deleteProgram('${p.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold py-2.5 px-4 rounded-xl transition flex items-center gap-1.5 border border-rose-200">
+            <i class="fa-solid fa-trash-can text-[11px]"></i> Hapus Program
+          </button>
+        </div>
+      ` : '';
+
+      detailContainer.innerHTML = `
+        <div class="space-y-6 flex-1 flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
+              <div>
+                <span class="text-[10px] uppercase font-bold tracking-widest text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">Detail Program</span>
+                <h2 class="text-lg md:text-2xl font-extrabold text-slate-900 mt-1">${p.nama}</h2>
+              </div>
+              <div class="bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-2xl px-4 py-2 flex flex-col items-end shadow-sm">
+                <span class="text-[9px] text-emerald-600 font-bold uppercase tracking-wider">Anggaran</span>
+                <span class="text-base md:text-lg font-black text-emerald-750">${formatRupiah(p.anggaran)}</span>
+              </div>
+            </div>
+
+            <!-- DESKRIPSI -->
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Deskripsi Kegiatan</h4>
+              <p class="text-sm md:text-base text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100 whitespace-pre-line">${p.deskripsi || 'Tidak ada deskripsi.'}</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- WAKTU PELAKSANAAN -->
+              <div class="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl flex items-start gap-3">
+                <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl"><i class="fa-regular fa-calendar-check text-lg"></i></div>
+                <div>
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Waktu Pelaksanaan</h4>
+                  <p class="text-sm font-semibold text-slate-800 mt-0.5">${p.pelaksanaan || '-'}</p>
+                </div>
+              </div>
+              
+              <!-- SUSUNAN PANITIA -->
+              <div class="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl flex items-start gap-3">
+                <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl"><i class="fa-solid fa-users text-lg"></i></div>
+                <div>
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Panitia / Penanggung Jawab</h4>
+                  <p class="text-sm font-semibold text-slate-800 mt-0.5">${p.panitia || '-'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          ${adminControls}
+        </div>
+      `;
+    }
+
+    function openAddProgramModal() {
+      document.getElementById('modal-program-title').innerText = "Tambah Program Kerja";
+      document.getElementById('prog-id').value = "";
+      document.getElementById('prog-nama').value = "";
+      document.getElementById('prog-deskripsi').value = "";
+      document.getElementById('prog-pelaksanaan').value = "";
+      document.getElementById('prog-panitia').value = "";
+      document.getElementById('prog-anggaran').value = "";
+      openModal('modal-program');
+    }
+
+    function editProgram(id) {
+      const p = globalPrograms.find(prog => prog.id === id);
+      if (!p) return;
+      document.getElementById('modal-program-title').innerText = "Edit Program Kerja";
+      document.getElementById('prog-id').value = p.id;
+      document.getElementById('prog-nama').value = p.nama;
+      document.getElementById('prog-deskripsi').value = p.deskripsi || "";
+      document.getElementById('prog-pelaksanaan').value = p.pelaksanaan || "";
+      document.getElementById('prog-panitia').value = p.panitia || "";
+      document.getElementById('prog-anggaran').value = p.anggaran;
+      openModal('modal-program');
+    }
+
+    async function saveProgramForm(e) {
+      e.preventDefault();
+      const data = {
+        id: document.getElementById('prog-id').value,
+        nama: document.getElementById('prog-nama').value,
+        deskripsi: document.getElementById('prog-deskripsi').value,
+        pelaksanaan: document.getElementById('prog-pelaksanaan').value,
+        panitia: document.getElementById('prog-panitia').value,
+        anggaran: document.getElementById('prog-anggaran').value
+      };
+
+      const res = await apiPost('simpanProgram', { data });
+      if (res.success) {
+        closeModal('modal-program');
+        selectedProgramId = data.id || selectedProgramId;
+        loadDashboardData();
+      } else {
+        alert("Gagal menyimpan program: " + res.message);
+      }
+    }
+
+    async function deleteProgram(id) {
+      if (!confirm("Apakah Anda yakin ingin menghapus program ini?")) return;
+      const res = await apiPost('hapusProgram', { id });
+      if (res.success) {
+        selectedProgramId = null;
+        loadDashboardData();
+      } else {
+        alert("Gagal menghapus program: " + res.message);
+      }
+    }
+
+    // 2. PEMASUKAN KAS (IURAN WARGA)
+    async function loadPemasukanData() {
+      // Selalu tarik semua data agar pengurutan dan filter header dinamis di sisi klien
+      const res = await apiGet('getPemasukanData', { blok: 'ALL' });
+      globalPemasukan = res.list || [];
+      globalPemasukanOptions = res.optionsBlok || [];
+      renderPemasukanTable();
+    }
+
+    function filterPemasukanByBlok(blok) {
+      currentFilteredBlok = blok;
+      renderPemasukanTable();
+    }
+
+    function sortPemasukan(list) {
+      return list.sort((a, b) => {
+        // Bersihkan prefix 'blok ' jika ada
+        const cleanA = String(a.blok || "").trim().replace(/^blok\s*/i, "");
+        const cleanB = String(b.blok || "").trim().replace(/^blok\s*/i, "");
+
+        const numA = parseInt(cleanA, 10);
+        const numB = parseInt(cleanB, 10);
+
+        if (!isNaN(numA) && !isNaN(numB)) {
+          if (numA !== numB) return numA - numB;
+        } else {
+          const comp = cleanA.localeCompare(cleanB, undefined, { numeric: true, sensitivity: 'base' });
+          if (comp !== 0) return comp;
+        }
+
+        // Jika blok sama, urutkan berdasarkan nomor rumah
+        const nrA = String(a.noRumah || "").trim();
+        const nrB = String(b.noRumah || "").trim();
+
+        const houseNumA = parseInt(nrA, 10);
+        const houseNumB = parseInt(nrB, 10);
+
+        if (!isNaN(houseNumA) && !isNaN(houseNumB)) {
+          return houseNumA - houseNumB;
+        } else {
+          return nrA.localeCompare(nrB, undefined, { numeric: true, sensitivity: 'base' });
+        }
+      });
+    }
+
+    function renderPemasukanTable() {
+      // 1. Render Table Header
+      const thead = document.querySelector('#section-pemasukan table thead');
+      thead.innerHTML = `
+        <tr>
+          <th class="px-3 sm:px-4 py-3">
+            <div class="flex items-center gap-1.5">
+              <span>BLOK</span>
+              <select id="filter-blok-header" onchange="filterPemasukanByBlok(this.value)" class="text-slate-800 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-[10px] font-semibold focus:outline-none cursor-pointer">
+                <option value="ALL">Semua</option>
+                ${globalPemasukanOptions.map(b => `<option value="${b}" ${b === currentFilteredBlok ? 'selected' : ''}>Blok ${b}</option>`).join('')}
+              </select>
+            </div>
+          </th>
+          <th class="px-3 sm:px-4 py-3">NO. RUMAH</th>
+          <th class="px-3 sm:px-4 py-3">NAMA WARGA</th>
+          <th class="px-3 sm:px-4 py-3">NOMINAL</th>
+          <th class="px-3 sm:px-4 py-3">CATATAN</th>
+          <th class="px-3 sm:px-4 py-3">TANGGAL</th>
+          ${isAdmin ? `<th class="px-3 sm:px-4 py-3 text-center">AKSI</th>` : ''}
+        </tr>
+      `;
+
+      // 2. Filter data
+      let listToRender = [...globalPemasukan];
+      if (currentFilteredBlok !== "ALL") {
+        listToRender = listToRender.filter(item => {
+          const cleanBlok = String(item.blok || "").trim().replace(/^blok\s*/i, "");
+          return cleanBlok.toUpperCase() === currentFilteredBlok.toUpperCase();
+        });
+      }
+
+      // 3. Sort data
+      listToRender = sortPemasukan(listToRender);
+
+      // 4. Render Row Data
+      const tbody = document.getElementById('pemasukan-table-body');
+      tbody.innerHTML = '';
+
+      if (listToRender.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="${isAdmin ? 7 : 6}" class="text-center py-6 text-xs text-slate-500 font-semibold bg-white">Belum ada catatan iuran.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      let colorIndex = 0;
+      listToRender.forEach(item => {
+        const cleanBlok = String(item.blok || "").trim().replace(/^blok\s*/i, "").toUpperCase();
+        if (!colorMap[cleanBlok]) {
+          colorMap[cleanBlok] = softColors[colorIndex % softColors.length];
+          colorIndex++;
+        }
+        const bgClass = colorMap[cleanBlok];
+        const displayBlok = String(item.blok).toLowerCase().startsWith('blok') ? item.blok : `Blok ${item.blok}`;
+
+        const adminCell = isAdmin ? `
+          <td class="px-3 sm:px-4 py-2 text-center whitespace-nowrap">
+            <button onclick="editPemasukan('${item.id}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded-lg transition mr-1.5" title="Edit">
+              <i class="fa-solid fa-pen text-[10px]"></i>
+            </button>
+            <button onclick="deletePemasukan('${item.id}')" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-1.5 rounded-lg transition" title="Hapus">
+              <i class="fa-solid fa-trash text-[10px]"></i>
+            </button>
+          </td>
+        ` : '';
+
+        tbody.innerHTML += `
+          <tr class="${bgClass} border-b border-slate-200/60 font-medium text-slate-800 hover:bg-slate-100/50 transition">
+            <td class="px-3 sm:px-4 py-3 font-bold">${displayBlok}</td>
+            <td class="px-3 sm:px-4 py-3">${item.noRumah}</td>
+            <td class="px-3 sm:px-4 py-3">${item.nama}</td>
+            <td class="px-3 sm:px-4 py-3 font-semibold text-emerald-700">${formatRupiah(item.nominal)}</td>
+            <td class="px-3 sm:px-4 py-3 text-slate-600 text-xs">${item.catatan}</td>
+            <td class="px-3 sm:px-4 py-3 text-[11px] text-slate-500">${formatDateIndo(item.tanggal)}</td>
+            ${adminCell}
+          </tr>
+        `;
+      });
+    }
+
+    function openAddPemasukanModal() {
+      document.getElementById('modal-pemasukan-title').innerText = "Form Input Iuran Warga";
+      document.getElementById('in-id').value = "";
+      document.getElementById('in-blok').value = "";
+      document.getElementById('in-norumah').value = "";
+      document.getElementById('in-nama').value = "";
+      document.getElementById('in-nominal').value = "";
+      document.getElementById('in-catatan').value = "";
+      document.getElementById('in-tanggal').value = new Date().toISOString().split('T')[0];
+      openModal('modal-pemasukan');
+    }
+
+    function editPemasukan(id) {
+      const item = globalPemasukan.find(p => p.id === id);
+      if (!item) return;
+      document.getElementById('modal-pemasukan-title').innerText = "Form Edit Iuran Warga";
+      document.getElementById('in-id').value = item.id;
+      document.getElementById('in-blok').value = item.blok.replace(/^blok\s*/i, "");
+      document.getElementById('in-norumah').value = item.noRumah;
+      document.getElementById('in-nama').value = item.nama;
+      document.getElementById('in-nominal').value = item.nominal;
+      document.getElementById('in-catatan').value = item.catatan || "";
+      document.getElementById('in-tanggal').value = item.tanggal ? item.tanggal.split('T')[0] : new Date().toISOString().split('T')[0];
+      openModal('modal-pemasukan');
+    }
+
+    async function savePemasukanForm(e) {
+      e.preventDefault();
+      const data = {
+        id: document.getElementById('in-id').value,
+        blok: document.getElementById('in-blok').value,
+        noRumah: document.getElementById('in-norumah').value,
+        nama: document.getElementById('in-nama').value,
+        nominal: document.getElementById('in-nominal').value,
+        catatan: document.getElementById('in-catatan').value,
+        tanggal: document.getElementById('in-tanggal').value
+      };
+
+      const res = await apiPost('simpanPemasukan', { data });
+      if (res.success) {
+        closeModal('modal-pemasukan');
+        loadPemasukanData();
+        loadDashboardData();
+      } else {
+        alert("Gagal menyimpan iuran: " + res.message);
+      }
+    }
+
+    async function deletePemasukan(id) {
+      if (!confirm("Apakah Anda yakin ingin menghapus catatan iuran ini?")) return;
+      const res = await apiPost('hapusPemasukan', { id });
+      if (res.success) {
+        loadPemasukanData();
+        loadDashboardData();
+      } else {
+        alert("Gagal menghapus iuran: " + res.message);
+      }
+    }
+
+    // 3. PENGELUARAN KAS (BUKU KAS)
+    async function loadPengeluaranData() {
+      const list = await apiGet('getPengeluaranData');
+      globalPengeluaran = list || [];
+      renderPengeluaranTable();
+    }
+
+    function renderPengeluaranTable() {
+      // 1. Render Table Header
+      const thead = document.querySelector('#section-pengeluaran table thead');
+      thead.innerHTML = `
+        <tr>
+          <th class="px-3 sm:px-4 py-3">Tanggal</th>
+          <th class="px-3 sm:px-4 py-3">Keterangan</th>
+          <th class="px-3 sm:px-4 py-3 text-right">Debet (Masuk)</th>
+          <th class="px-3 sm:px-4 py-3 text-right">Kredit (Keluar)</th>
+          <th class="px-3 sm:px-4 py-3 text-right">Saldo (Rp)</th>
+          ${isAdmin ? `<th class="px-3 sm:px-4 py-3 text-center">AKSI</th>` : ''}
+        </tr>
+      `;
+
+      // 2. Render Row Data
+      const tbody = document.getElementById('pengeluaran-table-body');
+      tbody.innerHTML = '';
+
+      if (globalPengeluaran.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="${isAdmin ? 6 : 5}" class="text-center py-6 text-xs text-slate-500 font-semibold bg-white">Belum ada transaksi pengeluaran/kas.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      globalPengeluaran.forEach(row => {
+        const adminCell = isAdmin ? `
+          <td class="px-3 sm:px-4 py-2 text-center whitespace-nowrap">
+            <button onclick="editPengeluaran('${row.id}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded-lg transition mr-1.5" title="Edit">
+              <i class="fa-solid fa-pen text-[10px]"></i>
+            </button>
+            <button onclick="deletePengeluaran('${row.id}')" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 p-1.5 rounded-lg transition" title="Hapus">
+              <i class="fa-solid fa-trash text-[10px]"></i>
+            </button>
+          </td>
+        ` : '';
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 font-medium border-b divide-x divide-slate-100 transition">
+            <td class="px-3 sm:px-4 py-3 text-[11px] text-slate-500">${formatDateIndo(row.tanggal)}</td>
+            <td class="px-3 sm:px-4 py-3 text-slate-800 font-medium text-xs sm:text-sm">${row.deskripsi}</td>
+            <td class="px-3 sm:px-4 py-3 text-right font-semibold text-emerald-600">${row.debet > 0 ? formatRupiah(row.debet) : '-'}</td>
+            <td class="px-3 sm:px-4 py-3 text-right font-semibold text-rose-600">${row.kredit > 0 ? formatRupiah(row.kredit) : '-'}</td>
+            <td class="px-3 sm:px-4 py-3 text-right font-bold text-slate-900 bg-slate-50/50">${formatRupiah(row.saldo)}</td>
+            ${adminCell}
+          </tr>
+        `;
+      });
+    }
+
+    function openAddPengeluaranModal() {
+      document.getElementById('modal-pengeluaran-title').innerText = "Form Transaksi Kas";
+      document.getElementById('out-id').value = "";
+      document.getElementById('out-tanggal').value = new Date().toISOString().split('T')[0];
+      document.getElementById('out-deskripsi').value = "";
+      document.getElementById('out-debet').value = "0";
+      document.getElementById('out-kredit').value = "0";
+      openModal('modal-pengeluaran');
+    }
+
+    function editPengeluaran(id) {
+      const row = globalPengeluaran.find(r => r.id === id);
+      if (!row) return;
+      document.getElementById('modal-pengeluaran-title').innerText = "Form Edit Transaksi Kas";
+      document.getElementById('out-id').value = row.id;
+      document.getElementById('out-tanggal').value = row.tanggal ? row.tanggal.split('T')[0] : new Date().toISOString().split('T')[0];
+      document.getElementById('out-deskripsi').value = row.deskripsi;
+      document.getElementById('out-debet').value = row.debet;
+      document.getElementById('out-kredit').value = row.kredit;
+      openModal('modal-pengeluaran');
+    }
+
+    async function savePengeluaranForm(e) {
+      e.preventDefault();
+      const data = {
+        id: document.getElementById('out-id').value,
+        tanggal: document.getElementById('out-tanggal').value,
+        deskripsi: document.getElementById('out-deskripsi').value,
+        debet: document.getElementById('out-debet').value,
+        kredit: document.getElementById('out-kredit').value
+      };
+
+      const res = await apiPost('simpanPengeluaran', { data });
+      if (res.success) {
+        closeModal('modal-pengeluaran');
+        loadPengeluaranData();
+        loadDashboardData();
+      } else {
+        alert("Gagal menyimpan transaksi: " + res.message);
+      }
+    }
+
+    async function deletePengeluaran(id) {
+      if (!confirm("Apakah Anda yakin ingin menghapus transaksi ini?")) return;
+      const res = await apiPost('hapusPengeluaran', { id });
+      if (res.success) {
+        loadPengeluaranData();
+        loadDashboardData();
+      } else {
+        alert("Gagal menghapus transaksi: " + res.message);
+      }
+    }
+  </script>
+</body>
+</html>
