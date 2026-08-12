@@ -204,8 +204,8 @@ function getPemasukanData(selectedBlok) {
           noRumah: values[i][1] || "-", // Col B is No Rumah
           nama: values[i][2] || "-",    // Col C is Nama
           nominal: Number(values[i][3]) || 0, // Col D is Nominal
-          catatan: values[i][4] || "-", // Col E is Catatan
-          tanggal: formatDateISO(values[i][5]) // Col F is Tanggal
+          tanggal: formatDateISO(values[i][4]), // Col E is Tanggal
+          catatan: values[i][5] || "-" // Col F is Catatan
         });
       }
     }
@@ -324,13 +324,13 @@ function simpanPemasukan(data) {
     const rowNum = parseInt(data.id.split('-')[1], 10);
     if (rowNum > 1 && rowNum <= sheet.getLastRow()) {
       sheet.getRange(rowNum, 1, 1, 6).setValues([[
-        data.blok, data.noRumah, data.nama, Number(data.nominal), data.catatan, tgl
+        data.blok, data.noRumah, data.nama, Number(data.nominal), tgl, data.catatan
       ]]);
       return { success: true, message: "Pemasukan berhasil diperbarui!" };
     }
   }
   
-  sheet.appendRow([data.blok, data.noRumah, data.nama, Number(data.nominal), data.catatan, tgl]);
+  sheet.appendRow([data.blok, data.noRumah, data.nama, Number(data.nominal), tgl, data.catatan]);
   return { success: true, message: "Pemasukan berhasil disimpan!" };
 }
 
