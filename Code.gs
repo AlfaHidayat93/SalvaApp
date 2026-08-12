@@ -134,7 +134,7 @@ function getDashboardData() {
     const valPem = sPem.getDataRange().getValues();
     if (valPem.length > 1) {
       for (let i = 1; i < valPem.length; i++) {
-        totalIuran += Number(valPem[i][3]) || 0; // Kolom Nominal di index 3
+        totalIuran += parseNumber(valPem[i][3]); // Kolom Nominal di index 3
       }
     }
   }
@@ -146,8 +146,8 @@ function getDashboardData() {
     const valPeng = sPeng.getDataRange().getValues();
     if (valPeng.length > 1) {
       for (let i = 1; i < valPeng.length; i++) {
-        totalDebetPengeluaran += Number(valPeng[i][3]) || 0; // Kolom Debet di index 3
-        totalKreditPengeluaran += Number(valPeng[i][4]) || 0; // Kolom Kredit di index 4
+        totalDebetPengeluaran += parseNumber(valPeng[i][3]); // Kolom Debet di index 3
+        totalKreditPengeluaran += parseNumber(valPeng[i][4]); // Kolom Kredit di index 4
       }
     }
   }
@@ -164,7 +164,7 @@ function getDashboardData() {
           deskripsi: valProg[i][2],
           pelaksanaan: valProg[i][3],
           panitia: valProg[i][4],
-          anggaran: Number(valProg[i][5]) || 0
+          anggaran: parseNumber(valProg[i][5])
         });
       }
     }
@@ -203,7 +203,7 @@ function getPemasukanData(selectedBlok) {
           blok: rawBlok,
           noRumah: values[i][1] || "-", // Col B is No Rumah
           nama: values[i][2] || "-",    // Col C is Nama
-          nominal: Number(values[i][3]) || 0, // Col D is Nominal
+          nominal: parseNumber(values[i][3]), // Col D is Nominal
           tanggal: formatDateISO(values[i][4]), // Col E is Tanggal
           catatan: values[i][5] || "-" // Col F is Catatan
         });
@@ -235,8 +235,8 @@ function getPengeluaranData() {
         rowIndex: i + 1,
         tanggal: formatDateISO(values[i][1]),
         deskripsi: values[i][2],
-        debet: Number(values[i][3]) || 0,
-        kredit: Number(values[i][4]) || 0
+        debet: parseNumber(values[i][3]),
+        kredit: parseNumber(values[i][4])
       });
     }
 
@@ -297,7 +297,7 @@ function simpanProgram(data) {
   
   if (data.id) {
     const success = updateRowInSheet(SHEET_PROGRAM, data.id, [
-      data.id, data.nama, data.deskripsi, data.pelaksanaan, data.panitia, Number(data.anggaran)
+      data.id, data.nama, data.deskripsi, data.pelaksanaan, data.panitia, parseNumber(data.anggaran)
     ]);
     if (success) {
       return { success: true, message: "Program berhasil diperbarui!" };
@@ -305,7 +305,7 @@ function simpanProgram(data) {
   }
   
   const id = "PROG-" + Date.now();
-  sheet.appendRow([id, data.nama, data.deskripsi, data.pelaksanaan, data.panitia, Number(data.anggaran)]);
+  sheet.appendRow([id, data.nama, data.deskripsi, data.pelaksanaan, data.panitia, parseNumber(data.anggaran)]);
   return { success: true, message: "Program berhasil disimpan!" };
 }
 
@@ -324,13 +324,13 @@ function simpanPemasukan(data) {
     const rowNum = parseInt(data.id.split('-')[1], 10);
     if (rowNum > 1 && rowNum <= sheet.getLastRow()) {
       sheet.getRange(rowNum, 1, 1, 6).setValues([[
-        data.blok, data.noRumah, data.nama, Number(data.nominal), tgl, data.catatan
+        data.blok, data.noRumah, data.nama, parseNumber(data.nominal), tgl, data.catatan
       ]]);
       return { success: true, message: "Pemasukan berhasil diperbarui!" };
     }
   }
   
-  sheet.appendRow([data.blok, data.noRumah, data.nama, Number(data.nominal), tgl, data.catatan]);
+  sheet.appendRow([data.blok, data.noRumah, data.nama, parseNumber(data.nominal), tgl, data.catatan]);
   return { success: true, message: "Pemasukan berhasil disimpan!" };
 }
 
@@ -359,7 +359,7 @@ function simpanPengeluaran(data) {
     for (let i = 1; i < values.length; i++) {
       if (values[i][0] && String(values[i][0]) === String(data.id)) {
         sheet.getRange(i + 1, 1, 1, 5).setValues([[
-          data.id, tgl, data.deskripsi, Number(data.debet), Number(data.kredit)
+          data.id, tgl, data.deskripsi, parseNumber(data.debet), parseNumber(data.kredit)
         ]]);
         return { success: true, message: "Pengeluaran berhasil diperbarui!" };
       }
@@ -371,7 +371,7 @@ function simpanPengeluaran(data) {
       if (rowNum > 1 && rowNum <= sheet.getLastRow()) {
         const existingId = values[rowNum - 1][0] || "";
         sheet.getRange(rowNum, 1, 1, 5).setValues([[
-          existingId, tgl, data.deskripsi, Number(data.debet), Number(data.kredit)
+          existingId, tgl, data.deskripsi, parseNumber(data.debet), parseNumber(data.kredit)
         ]]);
         return { success: true, message: "Pengeluaran berhasil diperbarui!" };
       }
@@ -379,7 +379,7 @@ function simpanPengeluaran(data) {
   }
   
   const newId = "OUT-" + Date.now();
-  sheet.appendRow([newId, tgl, data.deskripsi, Number(data.debet), Number(data.kredit)]);
+  sheet.appendRow([newId, tgl, data.deskripsi, parseNumber(data.debet), parseNumber(data.kredit)]);
   return { success: true, message: "Pengeluaran berhasil disimpan!" };
 }
 
@@ -409,4 +409,22 @@ function hapusPengeluaran(id) {
 function responseJSON(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Utilitas konversi angka robust (mendukung format mata uang, titik ribuan, koma desimal)
+function parseNumber(val) {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  var str = String(val).trim().replace(/[^\d,\.-]/g, '');
+  if (str.indexOf('.') !== -1 && str.indexOf(',') !== -1) {
+    str = str.replace(/\./g, '').replace(',', '.');
+  } else if (str.indexOf(',') !== -1) {
+    str = str.replace(',', '.');
+  } else if (str.indexOf('.') !== -1) {
+    var parts = str.split('.');
+    if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
+      str = str.replace(/\./g, '');
+    }
+  }
+  return Number(str) || 0;
 }

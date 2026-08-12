@@ -645,6 +645,22 @@
     function formatRupiah(num) {
       return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num || 0);
     }
+    function parseNumber(val) {
+      if (typeof val === 'number') return val;
+      if (!val) return 0;
+      var str = String(val).trim().replace(/[^\d,\.-]/g, '');
+      if (str.indexOf('.') !== -1 && str.indexOf(',') !== -1) {
+        str = str.replace(/\./g, '').replace(',', '.');
+      } else if (str.indexOf(',') !== -1) {
+        str = str.replace(',', '.');
+      } else if (str.indexOf('.') !== -1) {
+        var parts = str.split('.');
+        if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
+          str = str.replace(/\./g, '');
+        }
+      }
+      return Number(str) || 0;
+    }
     function formatDateIndo(dateStr) {
       if (!dateStr || dateStr === "-") return "-";
       try {
@@ -751,7 +767,11 @@
         document.getElementById('stat-keluar').innerText = formatRupiah(res.summary.totalPengeluaran);
         document.getElementById('stat-saldo').innerText = formatRupiah(res.summary.saldoKas);
 
-        globalPrograms = res.programs || [];
+        globalPrograms = (res.programs || []).map((p, idx) => ({
+          ...p,
+          id: p.id || `PROG-VIRTUAL-${idx}`,
+          anggaran: parseNumber(p.anggaran)
+        }));
         renderProgramSidebar();
       }
     }
