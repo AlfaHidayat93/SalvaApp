@@ -307,8 +307,9 @@ export default function IuranView({
           <table className="w-full text-left text-xs text-slate-700 min-w-[950px]">
             <thead className="bg-slate-800 text-white text-[11px] uppercase tracking-wider font-semibold">
               <tr>
-                <th className="py-3 px-3.5 sticky left-0 bg-slate-800 z-10 w-28">Blok / Rumah</th>
-                <th className="py-3 px-3.5 sticky left-28 bg-slate-800 z-10 w-40">Nama Warga</th>
+                <th className="py-3 px-3.5 sticky left-0 bg-slate-800 z-20 w-36 sm:w-44 min-w-[130px] border-r border-slate-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">
+                  Warga & Blok
+                </th>
                 {MONTH_NAMES.map((m, idx) => (
                   <th key={m} className="py-3 px-2 text-center w-14">
                     {m}
@@ -320,7 +321,7 @@ export default function IuranView({
             <tbody className="divide-y divide-slate-100">
               {filteredMatrix.length === 0 ? (
                 <tr>
-                  <td colSpan={15} className="py-12 text-center text-slate-400">
+                  <td colSpan={14} className="py-12 text-center text-slate-400">
                     <Receipt className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                     <p className="font-medium">Tidak ada data iuran yang cocok.</p>
                   </td>
@@ -330,16 +331,14 @@ export default function IuranView({
                   const w = row.warga;
                   return (
                     <tr key={w.id} className="hover:bg-slate-50/70 transition">
-                      {/* Fixed Blok/No */}
-                      <td className="py-2.5 px-3.5 font-bold font-mono text-slate-800 sticky left-0 bg-white z-10 border-r border-slate-100">
-                        <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-xs inline-block">
-                          {w.blok}-{w.noRumah}
-                        </span>
-                      </td>
-
-                      {/* Fixed Nama */}
-                      <td className="py-2.5 px-3.5 font-semibold text-slate-800 sticky left-28 bg-white z-10 border-r border-slate-100 truncate max-w-[160px]">
-                        {w.nama}
+                      {/* Fixed Warga & Blok (Single sticky column to prevent mobile overlap/gap) */}
+                      <td className="py-2.5 px-3.5 sticky left-0 bg-white z-10 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+                        <div className="font-bold text-slate-800 text-xs truncate max-w-[125px] sm:max-w-[160px]">
+                          {w.nama}
+                        </div>
+                        <div className="text-[10px] font-mono text-indigo-600 font-semibold mt-0.5">
+                          Blok {w.blok}-{w.noRumah}
+                        </div>
                       </td>
 
                       {/* 12 Bulan */}

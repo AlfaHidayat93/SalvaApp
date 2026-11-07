@@ -65,6 +65,7 @@ function handleRequest(e, isPost) {
       case "simpanProgram"       : result = simpanProgram(params.data);      break;
       case "hapusProgram"        : result = hapusProgram(params.id);         break;
       case "initSheets"          : result = initAllSheets();                 break;
+      case "migrasiFotoAduanKeDrive": result = migrasiFotoAduanKeDrive();     break;
       default:
         result = { status: "error", message: "Action tidak dikenal: " + action };
     }
@@ -249,6 +250,57 @@ function testDriveAccess() {
     Logger.log("Error akses Drive: " + e.message);
     return "GAGAL: " + e.message;
   }
+}
+
+// ============================================================
+//  FUNGSI MIGRASI: UPLOAD FOTO BASE64 DI SHEET ADUAN KE DRIVE
+//  (Jalankan fungsi ini di Editor Apps Script untuk memperbaiki
+//   data foto aduan lama yang masih berbentuk data:image/jpeg;base64)
+// ============================================================
+function migrasiFotoAduanKeDrive() {
+  const sh = getSheet(SH.ADUAN);
+  if (!sh) {
+    Logger.log("Sheet Aduan tidak ditemukan.");
+    return { success: false, message: "Sheet Aduan tidak ditemukan." };
+  }
+
+  const data = sh.getDataRange().getValues();
+  if (data.length <= 1) {
+    Logger.log("Tidak ada data aduan.");
+    return { success: true, message: "Tidak ada data aduan untuk dimigrasi." };
+  }
+
+  // Cari kolom fotoUrl (header di baris 1)
+  const headers = data[0];
+  let colFotoIdx = headers.indexOf("fotoUrl");
+  if (colFotoIdx === -1) colFotoIdx = 9; // default kolom J (index 9, 0-based)
+
+  let sukses = 0;
+  let totalBase64 = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const rawUrl = String(data[i][colFotoIdx] || "").trim();
+    if (rawUrl.indexOf("data:image/") === 0) {
+      totalBase64++;
+      Logger.log("Memproses baris " + (i + 1) + " (ID: " + data[i][0] + ")...");
+      try {
+        const driveUrl = saveImageToDrive(rawUrl, "ADUAN_MIGRASI_");
+        if (driveUrl && driveUrl.indexOf("http") === 0) {
+          sh.getRange(i + 1, colFotoIdx + 1).setValue(driveUrl);
+          sukses++;
+          Logger.log("Berhasil dipindahkan ke Drive: " + driveUrl);
+        } else {
+          Logger.log("Gagal memindahkan baris " + (i + 1) + ": " + driveUrl);
+        }
+      } catch (err) {
+        Logger.log("Error baris " + (i + 1) + ": " + err.message);
+      }
+    }
+  }
+
+  const msg = "Migrasi selesai! Berhasil memindahkan " + sukses + " dari " + totalBase64 + " foto base64 ke Google Drive.";
+  Logger.log(msg);
+  return { success: true, message: msg, sukses: sukses, totalBase64: totalBase64 };
 }
 
 // ============================================================

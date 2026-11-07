@@ -333,8 +333,7 @@
             <table class="w-full text-left text-xs text-slate-700 min-w-[950px]">
               <thead class="bg-slate-800 text-white text-[11px] uppercase tracking-wider font-semibold">
                 <tr>
-                  <th class="py-3 px-3.5 sticky left-0 bg-slate-800 z-10 w-28">Blok / Rumah</th>
-                  <th class="py-3 px-3.5 sticky left-28 bg-slate-800 z-10 w-40">Nama Warga</th>
+                  <th class="py-3 px-3.5 sticky left-0 bg-slate-800 z-20 w-36 sm:w-44 min-w-[130px] border-r border-slate-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">Warga & Blok</th>
                   <th class="py-3 px-2 text-center w-14">Jan</th>
                   <th class="py-3 px-2 text-center w-14">Feb</th>
                   <th class="py-3 px-2 text-center w-14">Mar</th>
@@ -711,6 +710,47 @@
     </div>
   </div>
 
+  <!-- MODAL TINDAK LANJUT & RESPON PENGURUS (ADMIN ONLY) -->
+  <div id="modal-respon-aduan" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+            <i class="fa-solid fa-shield text-indigo-600"></i>
+            Tindak Lanjut & Respon Pengurus
+          </h3>
+          <p id="modal-respon-aduan-judul" class="text-xs text-slate-500 mt-0.5 truncate max-w-[280px]"></p>
+        </div>
+        <button type="button" onclick="closeModal('modal-respon-aduan')" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form onsubmit="saveResponAduanForm(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="respon-aduan-id">
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Update Status Penanganan</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="setStatusRespon('Menunggu')" id="btn-status-menunggu" class="p-2 rounded-lg border font-bold text-center transition cursor-pointer">Menunggu</button>
+            <button type="button" onclick="setStatusRespon('Diproses')" id="btn-status-diproses" class="p-2 rounded-lg border font-bold text-center transition cursor-pointer">Diproses</button>
+            <button type="button" onclick="setStatusRespon('Selesai')" id="btn-status-selesai" class="p-2 rounded-lg border font-bold text-center transition cursor-pointer">Selesai</button>
+          </div>
+          <input type="hidden" id="respon-aduan-status" value="Menunggu">
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Tanggapan / Catatan Tindak Lanjut Pengurus</label>
+          <textarea id="respon-aduan-text" rows="3" required placeholder="Contoh: Lampu jalan sudah diperbaiki oleh tim teknisi sore tadi." class="w-full p-2.5 border rounded-xl bg-slate-50 text-slate-800"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl transition shadow-sm mt-3 cursor-pointer flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-check text-xs"></i> Simpan Tanggapan Pengurus
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL PROGRAM -->
   <div id="modal-program" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
@@ -1025,6 +1065,23 @@
         list.unshift({ ...data.data, id: "ADU-" + Date.now(), tanggal: new Date().toISOString().split('T')[0], status: "Menunggu" });
         localStorage.setItem('rtrw_aduan', JSON.stringify(list));
         return { success: true, message: "Aduan/saran berhasil dikirim!" };
+      }
+      if (action === "tanggapiAduan") {
+        const list = JSON.parse(localStorage.getItem('rtrw_aduan') || '[]');
+        const idx = list.findIndex(a => a.id === data.id);
+        if (idx !== -1) {
+          list[idx].status = data.status;
+          list[idx].tanggapanRT = data.tanggapan;
+          if (data.status === 'Selesai') list[idx].tanggalSelesai = new Date().toISOString().split('T')[0];
+        }
+        localStorage.setItem('rtrw_aduan', JSON.stringify(list));
+        return { success: true, message: "Tanggapan pengurus disimpan!" };
+      }
+      if (action === "hapusAduan") {
+        let list = JSON.parse(localStorage.getItem('rtrw_aduan') || '[]');
+        list = list.filter(a => a.id !== data.id);
+        localStorage.setItem('rtrw_aduan', JSON.stringify(list));
+        return { success: true, message: "Aduan berhasil dihapus!" };
       }
       return { success: true };
     }
@@ -1342,8 +1399,10 @@
 
         tbody.innerHTML += `
           <tr class="hover:bg-slate-50 transition">
-            <td class="py-2.5 px-3 font-bold font-mono text-slate-800 sticky left-0 bg-white border-r">Blok ${w.blok}-${w.noRumah}</td>
-            <td class="py-2.5 px-3 font-semibold text-slate-800 sticky left-28 bg-white border-r truncate max-w-[150px]">${w.nama}</td>
+            <td class="py-2.5 px-3.5 sticky left-0 bg-white z-10 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+              <div class="font-bold text-slate-800 text-xs truncate max-w-[125px] sm:max-w-[160px]">${w.nama}</div>
+              <div class="text-[10px] font-mono text-indigo-600 font-semibold mt-0.5">Blok ${w.blok}-${w.noRumah}</div>
+            </td>
             ${monthTds}
             <td class="py-2.5 px-3 text-right font-mono font-bold text-indigo-700 bg-slate-50">${formatRupiah(row.totalTahun)}</td>
           </tr>
@@ -1564,21 +1623,79 @@
           <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3">
             <div class="flex items-center justify-between">
               <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">${a.kategori || 'Umum'}</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${a.status === 'Selesai' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${a.status}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${a.status === 'Selesai' ? 'bg-emerald-100 text-emerald-800' : (a.status === 'Diproses' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800')}">${a.status || 'Menunggu'}</span>
             </div>
             <div>
               <h4 class="text-sm font-bold text-slate-800">${a.judul}</h4>
               <p class="text-[11px] text-slate-400 mt-0.5">${a.tanggal || ''}</p>
             </div>
             <p class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">${a.deskripsi}</p>
-            ${a.fotoUrl ? `<img src="${a.fotoUrl}" class="w-20 h-20 object-cover rounded-lg border">` : ''}
+            ${a.fotoUrl ? `<img src="${a.fotoUrl}" class="w-24 h-24 object-cover rounded-lg border">` : ''}
             <div class="text-xs text-slate-500 font-semibold">
               <i class="fa-solid fa-user text-indigo-500 mr-1"></i> ${isAnon ? 'Warga Anonim 🔒 (Dirahasiakan)' : `${a.namaPengirim} (${a.blokRumah || '-'})`}
             </div>
             ${a.tanggapanRT ? `<div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 text-xs text-emerald-900"><strong>Tanggapan Pengurus:</strong> ${a.tanggapanRT}</div>` : ''}
+
+            <!-- Admin Controls -->
+            <div class="admin-only ${isAdminLoggedIn ? '' : 'hidden'} flex items-center justify-end gap-2 pt-2.5 border-t border-slate-100 mt-2">
+              <button type="button" onclick="openResponAduanModal('${a.id}')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg transition border border-indigo-200 cursor-pointer flex items-center gap-1.5">
+                <i class="fa-solid fa-reply text-[11px]"></i> Tindak Lanjuti / Beri Respon
+              </button>
+              <button type="button" onclick="deleteAduan('${a.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer" title="Hapus Aduan">
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>
+            </div>
           </div>
         `;
       });
+      updateAdminVisibility();
+    }
+
+    let currentStatusRespon = 'Menunggu';
+
+    function setStatusRespon(status) {
+      currentStatusRespon = status;
+      document.getElementById('respon-aduan-status').value = status;
+      const bMenunggu = document.getElementById('btn-status-menunggu');
+      const bDiproses = document.getElementById('btn-status-diproses');
+      const bSelesai = document.getElementById('btn-status-selesai');
+
+      bMenunggu.className = status === 'Menunggu'
+        ? 'p-2 rounded-lg border font-bold text-center transition cursor-pointer bg-amber-100 text-amber-800 border-amber-300'
+        : 'p-2 rounded-lg border font-bold text-center transition cursor-pointer bg-slate-50 text-slate-500 border-slate-200';
+      bDiproses.className = status === 'Diproses'
+        ? 'p-2 rounded-lg border font-bold text-center transition cursor-pointer bg-blue-100 text-blue-800 border-blue-300'
+        : 'p-2 rounded-lg border font-bold text-center transition cursor-pointer bg-slate-50 text-slate-500 border-slate-200';
+      bSelesai.className = status === 'Selesai'
+        ? 'p-2 rounded-lg border font-bold text-center transition cursor-pointer bg-emerald-100 text-emerald-800 border-emerald-300'
+        : 'p-2 rounded-lg border font-bold text-center transition cursor-pointer bg-slate-50 text-slate-500 border-slate-200';
+    }
+
+    function openResponAduanModal(id) {
+      const aduan = globalAduan.find(a => String(a.id) === String(id));
+      if (!aduan) return;
+      document.getElementById('respon-aduan-id').value = aduan.id;
+      document.getElementById('modal-respon-aduan-judul').innerText = aduan.judul;
+      document.getElementById('respon-aduan-text').value = aduan.tanggapanRT || '';
+      setStatusRespon(aduan.status || 'Menunggu');
+      openModal('modal-respon-aduan');
+    }
+
+    async function saveResponAduanForm(e) {
+      e.preventDefault();
+      const id = document.getElementById('respon-aduan-id').value;
+      const status = document.getElementById('respon-aduan-status').value;
+      const tanggapan = document.getElementById('respon-aduan-text').value;
+
+      await apiPost('tanggapiAduan', { id, status, tanggapan });
+      closeModal('modal-respon-aduan');
+      loadAduanData();
+    }
+
+    async function deleteAduan(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus aduan ini?')) return;
+      await apiPost('hapusAduan', { id });
+      loadAduanData();
     }
 
     function toggleAnonimFields() {
