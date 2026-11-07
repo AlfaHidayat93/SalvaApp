@@ -192,7 +192,12 @@ function saveImageToDrive(dataUrlOrBase64, prefix) {
       }
     }
 
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    try {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (eShare) {
+      Logger.log("Info: Folder sudah memiliki izin publik, setSharing dilewati.");
+    }
+
     return "https://drive.google.com/uc?id=" + file.getId();
   } catch (err) {
     Logger.log("Gagal upload ke Google Drive: " + err.message);
@@ -231,7 +236,12 @@ function testDriveAccess() {
       locationName = "My Drive (Utama)";
     }
 
-    testFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    try {
+      testFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (eShare) {
+      Logger.log("Info: Folder sudah memiliki izin publik.");
+    }
+
     const url = "https://drive.google.com/uc?id=" + testFile.getId();
     Logger.log("File tes berhasil dibuat: " + url);
     return "SUKSES! Tempat: " + locationName + " | Link: " + url;
