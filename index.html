@@ -941,11 +941,38 @@
       }
       if (action === "getPengeluaranData") {
         const peng = JSON.parse(localStorage.getItem('rtrw_pengeluaran') || '[]');
-        peng.sort((a,b) => a.tanggal.localeCompare(b.tanggal));
+        const iuran = JSON.parse(localStorage.getItem('rtrw_iuran') || '[]');
+        const combined = [...peng];
+        const existingIds = new Set(peng.map(p => p.id));
+        const MONTH_NAMES_FULL = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        iuran.forEach(r => {
+          const total = Number(r.totalBayar) || 0;
+          if (total > 0 && !existingIds.has(r.id)) {
+            const mName = MONTH_NAMES_FULL[(Number(r.bulan) || 1) - 1] || `Bulan ${r.bulan}`;
+            combined.push({
+              id: r.id || `IUR-${r.wargaId}-${r.tahun}-${r.bulan}`,
+              tanggal: r.tanggalBayar || `${r.tahun}-01-01`,
+              kategori: "Iuran Warga",
+              deskripsi: `Iuran ${r.nama || 'Warga'} (Blok ${r.blok || '-'}/${r.noRumah || '-'}) - ${mName} ${r.tahun}`,
+              debet: total,
+              kredit: 0,
+              bukti: "",
+              isIuran: true
+            });
+          }
+        });
+
+        combined.sort((a,b) => {
+          const d = (a.tanggal || '').localeCompare(b.tanggal || '');
+          if (d !== 0) return d;
+          return (Number(b.debet) - Number(b.kredit)) - (Number(a.debet) - Number(a.kredit));
+        });
+
         let saldo = 0;
-        const list = peng.map(p => {
+        const list = combined.map(p => {
           saldo += ((Number(p.debet)||0) - (Number(p.kredit)||0));
-          return { ...p, saldo };
+          return { ...p, debet: Number(p.debet)||0, kredit: Number(p.kredit)||0, saldo };
         });
         return list.reverse();
       }
@@ -1383,21 +1410,100 @@
     // PENGELUARAN LOGIC
     // -------------------------------------------------------------
     async function loadPengeluaranData() {
-      const res = await apiGet('getPengeluaranData');
-      globalPengeluaran = Array.isArray(res) ? res : [];
+      const resPeng = await apiGet('getPengeluaranData');
+      let listPeng = Array.isArray(resPeng) ? [...resPeng] : [];
+
+      // Cek apakah di list pengeluaran sudah ada transaksi iuran (kategori "Iuran Warga" atau id diawali "IUR-")
+      const hasIuranInPeng = listPeng.some(p => p.kategori === 'Iuran Warga' || String(p.id).startsWith('IUR-'));
+
+      // Jika belum ada (misal dari data spreadsheet Google Apps Script), ambil data Iuran dan gabungkan secara otomatis
+      if (!hasIuranInPeng) {
+        let iuranMatrix = globalIuran;
+        if (!iuranMatrix || iuranMatrix.length === 0) {
+          const resIuran = await apiGet('getIuranMatrixData', { tahun: document.getElementById('filter-iuran-tahun')?.value || new Date().getFullYear() });
+          if (resIuran && resIuran.matrix) {
+            iuranMatrix = resIuran.matrix;
+            globalIuran = resIuran.matrix;
+          }
+        }
+
+        if (Array.isArray(iuranMatrix)) {
+          const MONTH_NAMES_FULL = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+          const tahunVal = document.getElementById('filter-iuran-tahun')?.value || new Date().getFullYear();
+          iuranMatrix.forEach(row => {
+            const w = row.warga;
+            const months = row.months || {};
+            for (let m = 1; m <= 12; m++) {
+              const cell = months[m];
+              if (cell && (Number(cell.totalBayar) > 0 || cell.totalBayar > 0)) {
+                const totalBayar = Number(cell.totalBayar) || 0;
+                const mName = MONTH_NAMES_FULL[m - 1] || `Bulan ${m}`;
+                listPeng.push({
+                  id: cell.id || `IUR-${w.id}-${tahunVal}-${m}`,
+                  tanggal: cell.tanggalBayar || `${tahunVal}-${String(m).padStart(2, '0')}-05`,
+                  kategori: 'Iuran Warga',
+                  deskripsi: `Iuran ${w.nama} (Blok ${w.blok}-${w.noRumah}) - ${mName} ${tahunVal}`,
+                  debet: totalBayar,
+                  kredit: 0,
+                  saldo: 0,
+                  bukti: '',
+                  isIuran: true
+                });
+              }
+            }
+          });
+        }
+      }
+
+      // Urutkan kronologis terlama ke terbaru untuk kalkulasi saldo berjalan
+      listPeng.sort((a, b) => {
+        const dDiff = String(a.tanggal || '').localeCompare(String(b.tanggal || ''));
+        if (dDiff !== 0) return dDiff;
+        return (Number(b.debet) - Number(b.kredit)) - (Number(a.debet) - Number(a.kredit));
+      });
+
+      // Hitung saldo kas berjalan
+      let runningSaldo = 0;
+      listPeng = listPeng.map(p => {
+        runningSaldo += (Number(p.debet) || 0) - (Number(p.kredit) || 0);
+        return {
+          ...p,
+          debet: Number(p.debet) || 0,
+          kredit: Number(p.kredit) || 0,
+          saldo: runningSaldo
+        };
+      });
+
+      // Tampilkan urutan transaksi terbaru di bagian paling atas
+      globalPengeluaran = listPeng.reverse();
+
       const tbody = document.getElementById('pengeluaran-table-body');
       tbody.innerHTML = '';
+
+      if (globalPengeluaran.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">Belum ada transaksi buku kas.</td></tr>`;
+        return;
+      }
+
       globalPengeluaran.forEach(p => {
+        const isIuranItem = p.isIuran || p.kategori === 'Iuran Warga' || String(p.id).startsWith('IUR-');
+        const badgeColor = isIuranItem 
+          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+          : 'bg-slate-100 text-slate-700';
+
         tbody.innerHTML += `
           <tr class="hover:bg-slate-50 transition">
             <td class="py-3 px-3.5 font-mono text-slate-600 font-medium">${p.tanggal || '-'}</td>
-            <td class="py-3 px-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-semibold">${p.kategori || 'Umum'}</span></td>
+            <td class="py-3 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-semibold ${badgeColor}">${p.kategori || 'Umum'}</span></td>
             <td class="py-3 px-4 font-semibold text-slate-800">${p.deskripsi}</td>
             <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600">${p.debet > 0 ? formatRupiah(p.debet) : '-'}</td>
             <td class="py-3 px-3 text-right font-mono font-bold text-rose-600">${p.kredit > 0 ? formatRupiah(p.kredit) : '-'}</td>
             <td class="py-3 px-3.5 text-right font-mono font-bold text-indigo-700">${formatRupiah(p.saldo)}</td>
             <td class="py-3 px-3 text-center admin-only hidden">
-              <button onclick="deletePengeluaran('${p.id}')" class="text-rose-600 hover:underline"><i class="fa-solid fa-trash"></i></button>
+              ${isIuranItem 
+                ? `<span class="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200" title="Kelola pembayaran dari menu Iuran Bulanan">Iuran</span>` 
+                : `<button onclick="deletePengeluaran('${p.id}')" class="text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Hapus Transaksi"><i class="fa-solid fa-trash"></i></button>`
+              }
             </td>
           </tr>
         `;
@@ -1427,6 +1533,13 @@
       };
       await apiPost('simpanPengeluaran', { data });
       closeModal('modal-pengeluaran');
+      loadPengeluaranData();
+      loadDashboardData();
+    }
+
+    async function deletePengeluaran(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus transaksi ini dari buku kas?')) return;
+      await apiPost('hapusPengeluaran', { id });
       loadPengeluaranData();
       loadDashboardData();
     }

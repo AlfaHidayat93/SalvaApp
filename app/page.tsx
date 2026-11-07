@@ -136,11 +136,65 @@ export default function Home() {
   const loadPengeluaranData = useCallback(async () => {
     try {
       const res = await apiGet('getPengeluaranData', {}, DEFAULT_GAS_URL, isLocalMode);
-      if (Array.isArray(res)) setPengeluaranList(res);
+      let list = Array.isArray(res) ? [...res] : [];
+
+      const hasIuran = list.some(p => p.kategori === 'Iuran Warga' || String(p.id).startsWith('IUR-'));
+      if (!hasIuran) {
+        let matrix = iuranMatrix;
+        if (!matrix || matrix.length === 0) {
+          const resIuran = await apiGet('getIuranMatrixData', { tahun: selectedTahun }, DEFAULT_GAS_URL, isLocalMode);
+          if (resIuran && resIuran.matrix) matrix = resIuran.matrix;
+        }
+
+        if (Array.isArray(matrix)) {
+          const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+          matrix.forEach(row => {
+            const w = row.warga;
+            const months = row.months || {};
+            for (let m = 1; m <= 12; m++) {
+              const cell = months[m];
+              if (cell && (Number(cell.totalBayar) > 0 || cell.totalBayar > 0)) {
+                const total = Number(cell.totalBayar) || 0;
+                const mName = monthNames[m - 1] || `Bulan ${m}`;
+                list.push({
+                  id: cell.id || `IUR-${w.id}-${selectedTahun}-${m}`,
+                  tanggal: cell.tanggalBayar || `${selectedTahun}-${String(m).padStart(2, '0')}-05`,
+                  kategori: 'Iuran Warga',
+                  deskripsi: `Iuran ${w.nama} (Blok ${w.blok}/${w.noRumah}) - ${mName} ${selectedTahun}`,
+                  debet: total,
+                  kredit: 0,
+                  saldo: 0,
+                  bukti: ''
+                });
+              }
+            }
+          });
+        }
+
+        list.sort((a, b) => {
+          const d = (a.tanggal || '').localeCompare(b.tanggal || '');
+          if (d !== 0) return d;
+          return (Number(b.debet) - Number(b.kredit)) - (Number(a.debet) - Number(a.kredit));
+        });
+
+        let runningSaldo = 0;
+        list = list.map(p => {
+          runningSaldo += (Number(p.debet) || 0) - (Number(p.kredit) || 0);
+          return {
+            ...p,
+            debet: Number(p.debet) || 0,
+            kredit: Number(p.kredit) || 0,
+            saldo: runningSaldo
+          };
+        });
+        list.reverse();
+      }
+
+      setPengeluaranList(list);
     } catch (e) {
       console.error(e);
     }
-  }, [isLocalMode]);
+  }, [selectedTahun, iuranMatrix, isLocalMode]);
 
   const loadAduanData = useCallback(async () => {
     try {

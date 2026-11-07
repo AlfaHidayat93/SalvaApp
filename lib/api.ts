@@ -334,16 +334,44 @@ export const localDB = {
     return { success: true, message: `Iuran Bulan ${bulan}/${tahun} berhasil disimpan!` };
   },
 
-  getPengeluaran() {
+  getPengeluaran(): Pengeluaran[] {
     this.init();
     const peng: Pengeluaran[] = JSON.parse(localStorage.getItem('rtrw_pengeluaran') || '[]');
-    peng.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+    const iuran: any[] = JSON.parse(localStorage.getItem('rtrw_iuran') || '[]');
+    const combined = [...peng];
+    const existingIds = new Set(peng.map(p => p.id));
+    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+    iuran.forEach(r => {
+      const total = Number(r.totalBayar) || 0;
+      if (total > 0 && !existingIds.has(r.id)) {
+        const bName = monthNames[(Number(r.bulan) || 1) - 1] || `Bulan ${r.bulan}`;
+        combined.push({
+          id: r.id || `IUR-${r.wargaId}-${r.tahun}-${r.bulan}`,
+          tanggal: r.tanggalBayar || `${r.tahun}-01-01`,
+          kategori: "Iuran Warga",
+          deskripsi: `Iuran ${r.nama || 'Warga'} (Blok ${r.blok}/${r.noRumah}) - ${bName} ${r.tahun}`,
+          debet: total,
+          kredit: 0,
+          saldo: 0,
+          bukti: ""
+        });
+      }
+    });
+
+    combined.sort((a, b) => {
+      const d = (a.tanggal || '').localeCompare(b.tanggal || '');
+      if (d !== 0) return d;
+      return (Number(b.debet) - Number(b.kredit)) - (Number(a.debet) - Number(a.kredit));
+    });
 
     let runningSaldo = 0;
-    const list = peng.map(p => {
+    const list = combined.map(p => {
       runningSaldo += (Number(p.debet) || 0) - (Number(p.kredit) || 0);
       return {
         ...p,
+        debet: Number(p.debet) || 0,
+        kredit: Number(p.kredit) || 0,
         saldo: runningSaldo
       };
     });

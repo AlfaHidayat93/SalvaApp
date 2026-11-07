@@ -313,7 +313,10 @@ function getDashboardData() {
 
   let totalDebet = 0, totalKredit = 0;
   pengeluaran.forEach(p => {
-    totalDebet  += (Number(p.debet)  || 0);
+    // Hindari double-count jika di sheet Pengeluaran terdapat baris dari Iuran Warga
+    if (String(p.kategori) !== "Iuran Warga" && !String(p.id).startsWith("IUR-")) {
+      totalDebet += (Number(p.debet) || 0);
+    }
     totalKredit += (Number(p.kredit) || 0);
   });
 
@@ -499,16 +502,59 @@ function simpanIuranBulanan(data) {
 //  PENGELUARAN / BUKU KAS
 // ============================================================
 function getPengeluaranData() {
-  let list = sheetToObjects(getSheet(SH.PENGELUARAN));
-  list.sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
+  const pengList = sheetToObjects(getSheet(SH.PENGELUARAN));
+  const iuranList = sheetToObjects(getSheet(SH.IURAN));
 
-  let saldo = 0;
-  list = list.map(p => {
-    saldo += (Number(p.debet) || 0) - (Number(p.kredit) || 0);
-    return { ...p, debet: Number(p.debet) || 0, kredit: Number(p.kredit) || 0, saldo };
+  const combined = pengList.map(p => ({
+    id: String(p.id),
+    tanggal: String(p.tanggal || ""),
+    kategori: String(p.kategori || "Umum"),
+    deskripsi: String(p.deskripsi || "-"),
+    debet: Number(p.debet) || 0,
+    kredit: Number(p.kredit) || 0,
+    bukti: String(p.bukti || ""),
+    isIuran: String(p.kategori) === "Iuran Warga" || String(p.id).startsWith("IUR-")
+  }));
+
+  const existingIds = new Set(combined.map(c => c.id));
+  const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+  iuranList.forEach(r => {
+    const total = Number(r.totalBayar) || 0;
+    if (total > 0) {
+      const iurId = String(r.id || `IUR-${r.wargaId}-${r.tahun}-${r.bulan}`);
+      if (!existingIds.has(iurId)) {
+        const bName = monthNames[(Number(r.bulan) || 1) - 1] || `Bulan ${r.bulan}`;
+        combined.push({
+          id: iurId,
+          tanggal: String(r.tanggalBayar || `${r.tahun}-01-01`),
+          kategori: "Iuran Warga",
+          deskripsi: `Iuran ${r.nama || 'Warga'} (Blok ${r.blok || '-'}/${r.noRumah || '-'}) - ${bName} ${r.tahun || ''}`,
+          debet: total,
+          kredit: 0,
+          bukti: "",
+          isIuran: true
+        });
+      }
+    }
   });
 
-  return list.reverse();
+  combined.sort((a, b) => {
+    const dDiff = String(a.tanggal || "").localeCompare(String(b.tanggal || ""));
+    if (dDiff !== 0) return dDiff;
+    return (Number(b.debet) - Number(b.kredit)) - (Number(a.debet) - Number(a.kredit));
+  });
+
+  let saldo = 0;
+  const result = combined.map(item => {
+    saldo += (item.debet - item.kredit);
+    return {
+      ...item,
+      saldo: saldo
+    };
+  });
+
+  return result.reverse();
 }
 
 function simpanPengeluaran(data) {
