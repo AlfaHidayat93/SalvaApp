@@ -1,6 +1,7 @@
 import { Warga, IuranMatrixRow, IuranMonthDetail, Pengeluaran, Aduan, ProgramKerja, DashboardSummary } from './types';
 
-export const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbwnTfbArTptBmsH-4iEWaQrzk-BvPP_gq8jquY8yNIMm8FnE7xmT59WKgHEvNLktd9T/exec";
+export const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbwTpr9pUYiODf0udf3F6lxtoIvjeBxGLxCVNqA_avRIBmV1fm2Dr-CD2mvWqBG5fVQ_og/exec";
+export const DRIVE_FOLDER_ID = "1gJaS_ZvzyFrE2gTOfEX6Y2Dd48OO4L8H";
 
 export function formatRupiah(num: number): string {
   return new Intl.NumberFormat('id-ID', {

@@ -72,6 +72,9 @@ export default function Home() {
   // Check saved session & local mode preference
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // Pre-initialize localDB so demo data is ready as fallback
+      localDB.init();
+
       const savedAdmin = sessionStorage.getItem('rtrw_admin');
       if (savedAdmin === 'true') setIsAdmin(true);
 

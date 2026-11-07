@@ -47,17 +47,18 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Mobile Backdrop - Only rendered on mobile when drawer is open */}
       {isOpenMobile && (
         <div
           onClick={() => setIsOpenMobile(false)}
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 md:hidden transition-opacity"
+          className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-40 md:hidden transition-opacity cursor-pointer"
+          aria-hidden="true"
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 w-72 md:w-64 bg-slate-900 text-white flex flex-col shadow-2xl md:shadow-none transition-transform duration-300 ease-in-out shrink-0 ${
+        className={`fixed md:relative inset-y-0 left-0 z-50 md:z-30 w-72 md:w-64 bg-slate-900 text-white flex flex-col shadow-2xl md:shadow-none transition-transform duration-300 ease-in-out shrink-0 select-none ${
           isOpenMobile ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
@@ -73,8 +74,10 @@ export default function Sidebar({
             </div>
           </div>
           <button
+            type="button"
             onClick={() => setIsOpenMobile(false)}
-            className="md:hidden text-slate-400 hover:text-white p-1.5 rounded-lg"
+            className="md:hidden text-slate-400 hover:text-white p-1.5 rounded-lg cursor-pointer"
+            aria-label="Tutup Menu"
           >
             <X className="w-5 h-5" />
           </button>
@@ -87,8 +90,9 @@ export default function Sidebar({
               <Database className="w-3.5 h-3.5 text-indigo-400" /> Database:
             </span>
             <button
+              type="button"
               onClick={toggleLocalMode}
-              className={`text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 transition ${
+              className={`text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 transition cursor-pointer ${
                 isLocalMode
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30'
                   : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30'
@@ -113,13 +117,14 @@ export default function Sidebar({
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => {
                   setCurrentTab(item.id);
                   setIsOpenMobile(false);
                 }}
-                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs md:text-sm font-medium transition-all duration-200 text-left ${
+                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs md:text-sm font-medium transition-all duration-150 text-left cursor-pointer active:scale-98 ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25 font-semibold'
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 font-semibold'
                     : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                 }`}
               >
@@ -138,8 +143,9 @@ export default function Sidebar({
                 <span className="w-2 h-2 rounded-full bg-slate-500" /> Mode Warga (Pengunjung)
               </span>
               <button
+                type="button"
                 onClick={onOpenLogin}
-                className="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2.5 px-3 rounded-xl border border-slate-700 transition flex items-center justify-center gap-1.5 shadow-sm"
+                className="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2.5 px-3 rounded-xl border border-slate-700 transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer active:scale-98"
               >
                 <Lock className="w-3.5 h-3.5" /> Login Pengurus RT
               </button>
@@ -150,8 +156,9 @@ export default function Sidebar({
                 <ShieldCheck className="w-4 h-4" /> Pengurus RT Aktif
               </span>
               <button
+                type="button"
                 onClick={onLogout}
-                className="w-full bg-rose-900/40 hover:bg-rose-900/70 text-rose-300 text-xs font-semibold py-2 px-3 rounded-xl border border-rose-800/80 transition flex items-center justify-center gap-1.5"
+                className="w-full bg-rose-900/40 hover:bg-rose-900/70 text-rose-300 text-xs font-semibold py-2 px-3 rounded-xl border border-rose-800/80 transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
               >
                 <LogOut className="w-3.5 h-3.5" /> Logout Admin
               </button>

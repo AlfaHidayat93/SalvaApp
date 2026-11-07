@@ -36,9 +36,13 @@ export default function DashboardView({
   onOpenEditProgram,
   onDeleteProgram,
 }: DashboardViewProps) {
-  const [selectedProgId, setSelectedProgId] = useState<string>(
-    programs.length > 0 ? programs[0].id : ''
-  );
+  const [selectedProgId, setSelectedProgId] = useState<string>('');
+
+  React.useEffect(() => {
+    if (programs.length > 0 && (!selectedProgId || !programs.some(p => p.id === selectedProgId))) {
+      setSelectedProgId(programs[0].id);
+    }
+  }, [programs, selectedProgId]);
 
   const selectedProgram =
     programs.find((p) => p.id === selectedProgId) || programs[0];
@@ -211,11 +215,12 @@ export default function DashboardView({
                 return (
                   <button
                     key={prog.id}
+                    type="button"
                     onClick={() => setSelectedProgId(prog.id)}
-                    className={`w-full text-left p-3 rounded-xl border transition-all text-xs ${
+                    className={`w-full text-left p-3.5 rounded-xl border transition-all text-xs cursor-pointer active:scale-98 select-none ${
                       isSelected
-                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                        : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30'
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm font-semibold'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50'
                     }`}
                   >
                     <div className="flex items-center justify-between font-semibold">
