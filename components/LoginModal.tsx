@@ -43,7 +43,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h3 className="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-indigo-600" />
-            Login Pengurus RT / RW
+            Login Pengurus Perumahan
           </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
             <X className="w-5 h-5" />

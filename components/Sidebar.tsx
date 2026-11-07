@@ -65,12 +65,14 @@ export default function Sidebar({
         {/* Brand Header */}
         <div className="p-4 md:p-5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-indigo-600 p-2.5 rounded-xl text-white shadow-md shadow-indigo-600/30 flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="Logo Batujai Salva Residence"
+              className="w-10 h-10 rounded-xl object-contain bg-white/95 p-0.5 shadow-md shadow-indigo-600/30 shrink-0 border border-indigo-400/30"
+            />
             <div>
-              <h1 className="font-bold text-base leading-tight">SALVA RT/RW</h1>
-              <p className="text-[11px] text-slate-400">Portal Warga & Pengurus</p>
+              <h1 className="font-bold text-sm leading-tight text-white">Batujai Salva</h1>
+              <p className="text-[11px] text-indigo-300 font-medium">Residence</p>
             </div>
           </div>
           <button
@@ -147,20 +149,20 @@ export default function Sidebar({
                 onClick={onOpenLogin}
                 className="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2.5 px-3 rounded-xl border border-slate-700 transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer active:scale-98"
               >
-                <Lock className="w-3.5 h-3.5" /> Login Pengurus RT
+                <Lock className="w-3.5 h-3.5" /> Login Pengurus
               </button>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
               <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4" /> Pengurus RT Aktif
+                <ShieldCheck className="w-4 h-4" /> Pengurus Aktif
               </span>
               <button
                 type="button"
                 onClick={onLogout}
                 className="w-full bg-rose-900/40 hover:bg-rose-900/70 text-rose-300 text-xs font-semibold py-2 px-3 rounded-xl border border-rose-800/80 transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
               >
-                <LogOut className="w-3.5 h-3.5" /> Logout Admin
+                <LogOut className="w-3.5 h-3.5" /> Logout Pengurus
               </button>
             </div>
           )}
@@ -169,7 +171,7 @@ export default function Sidebar({
         {/* Copyright Footer */}
         <div className="p-4 border-t border-slate-850 bg-slate-950/40 text-center shrink-0">
           <p className="text-[10px] text-slate-500 font-medium tracking-wide leading-relaxed">
-            &copy; 2026 SALVA RT/RW.<br />
+            &copy; 2026 Batujai Salva Residence.<br />
             Copyright by{' '}
             <a
               href="https://alfahidayat93.github.io"

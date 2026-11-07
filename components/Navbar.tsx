@@ -12,7 +12,7 @@ interface NavbarProps {
 }
 
 const tabTitles: Record<string, string> = {
-  dashboard: 'Dashboard RT/RW & Agenda Program',
+  dashboard: 'Dashboard & Agenda Program Kerja',
   warga: 'Daftar Warga & Penghuni Blok',
   iuran: 'Rekap Iuran Bulanan Warga (Sampah, Keamanan, Kas)',
   pengeluaran: 'Buku Kas & Catatan Pengeluaran',
@@ -45,10 +45,10 @@ export default function Navbar({
         </button>
         <div>
           <h2 className="text-sm sm:text-base md:text-lg font-bold text-slate-800 truncate leading-tight">
-            {tabTitles[currentTab] || 'Portal RT/RW'}
+            {tabTitles[currentTab] || 'Portal Batujai Salva Residence'}
           </h2>
           <p className="text-[11px] text-slate-400 hidden sm:block">
-            SALVA Residence • Rukun Tetangga & Warga
+            Batujai Salva Residence • Perumahan Warga
           </p>
         </div>
       </div>
@@ -56,7 +56,7 @@ export default function Navbar({
       <div className="flex items-center gap-2.5">
         {isAdmin && (
           <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-            <ShieldCheck className="w-3.5 h-3.5" /> Mode Admin
+            <ShieldCheck className="w-3.5 h-3.5" /> Mode Pengurus
           </span>
         )}
 

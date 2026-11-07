@@ -57,7 +57,7 @@ export const localDB = {
         { id: "WRG-3", blok: "A", noRumah: "05", nama: "Miq Prabu", nik: "3275012304910003", noHp: "081234567803", statusTinggal: "Tetap", jumlahAnggota: 5, keterangan: "Sie Keamanan" },
         { id: "WRG-4", blok: "A", noRumah: "09", nama: "Arif Setiawan", nik: "3275012304910004", noHp: "081234567804", statusTinggal: "Kontrak", jumlahAnggota: 2, keterangan: "Kontrak s/d Des 2026" },
         { id: "WRG-5", blok: "B", noRumah: "01", nama: "Ical Firmansyah", nik: "3275012304910005", noHp: "081234567805", statusTinggal: "Tetap", jumlahAnggota: 4, keterangan: "-" },
-        { id: "WRG-6", blok: "B", noRumah: "02", nama: "Pak Surya", nik: "3275012304910006", noHp: "081234567806", statusTinggal: "Tetap", jumlahAnggota: 3, keterangan: "Penasehat RT" },
+        { id: "WRG-6", blok: "B", noRumah: "02", nama: "Pak Surya", nik: "3275012304910006", noHp: "081234567806", statusTinggal: "Tetap", jumlahAnggota: 3, keterangan: "Penasehat Lingkungan" },
         { id: "WRG-7", blok: "B", noRumah: "06", nama: "Mas Fadil", nik: "3275012304910007", noHp: "081234567807", statusTinggal: "Tetap", jumlahAnggota: 2, keterangan: "-" },
         { id: "WRG-8", blok: "C", noRumah: "03", nama: "Ikrom Hidayat", nik: "3275012304910008", noHp: "081234567808", statusTinggal: "Tetap", jumlahAnggota: 4, keterangan: "-" },
         { id: "WRG-9", blok: "C", noRumah: "07", nama: "Bayu Pratama", nik: "3275012304910009", noHp: "081234567809", statusTinggal: "Kontrak", jumlahAnggota: 3, keterangan: "-" },
@@ -105,7 +105,7 @@ export const localDB = {
 
     if (!localStorage.getItem('rtrw_pengeluaran')) {
       const initialPengeluaran: Pengeluaran[] = [
-        { id: "OUT-1", tanggal: "2026-08-01", kategori: "Saldo Awal", deskripsi: "Saldo Awal Kas RT / RW", debet: 2500000, kredit: 0 },
+        { id: "OUT-1", tanggal: "2026-08-01", kategori: "Saldo Awal", deskripsi: "Saldo Awal Kas Batujai Salva Residence", debet: 2500000, kredit: 0 },
         { id: "OUT-2", tanggal: "2026-08-04", kategori: "Kebersihan & Sampah", deskripsi: "Honor Petugas Pengangkut Sampah Bulan Agustus", debet: 0, kredit: 800000 },
         { id: "OUT-3", tanggal: "2026-08-06", kategori: "Keamanan & Ronda", deskripsi: "Insentif Pos Jaga & Siskamling Malam", debet: 0, kredit: 600000 },
         { id: "OUT-4", tanggal: "2026-08-10", kategori: "Fasilitas & Lampu", deskripsi: "Pembelian 5 unit lampu LED & fitting jalan Gang Blok B", debet: 0, kredit: 320000 },
@@ -166,7 +166,7 @@ export const localDB = {
     if (!localStorage.getItem('rtrw_programs')) {
       const initialPrograms: ProgramKerja[] = [
         { id: "PROG-1", nama: "Semarak HUT RI ke-81", deskripsi: "Peringatan kemerdekaan dengan lomba anak-anak, jalan sehat keluarga, dan malam ramah tamah warga.", pelaksanaan: "17 Agustus 2026", panitia: "Pak Eko (Ketua Pelaksana)", anggaran: 4500000 },
-        { id: "PROG-2", nama: "Fogging Massal & Kerja Bakti", deskripsi: "Pembersihan saluran air dan fogging nyamuk demam berdarah serentak seluruh blok perumahan.", pelaksanaan: "30 Agustus 2026", panitia: "Sie Kebersihan RT", anggaran: 1250000 },
+        { id: "PROG-2", nama: "Fogging Massal & Kerja Bakti", deskripsi: "Pembersihan saluran air dan fogging nyamuk demam berdarah serentak seluruh blok perumahan.", pelaksanaan: "30 Agustus 2026", panitia: "Sie Kebersihan Lingkungan", anggaran: 1250000 },
         { id: "PROG-3", nama: "Pemasangan 4 Titik CCTV Baru", deskripsi: "Instalasi kamera CCTV resolusi tinggi di jalur masuk gerbang belakang dan perempatan blok C.", pelaksanaan: "September 2026", panitia: "Sie Keamanan", anggaran: 3800000 }
       ];
       localStorage.setItem('rtrw_programs', JSON.stringify(initialPrograms));
@@ -368,7 +368,7 @@ export const localDB = {
     const newEntry: Pengeluaran = {
       id: "OUT-" + Date.now(),
       tanggal: data.tanggal || new Date().toISOString().split('T')[0],
-      kategori: data.kategori || "Operasional RT",
+      kategori: data.kategori || "Operasional Lingkungan",
       deskripsi: data.deskripsi || "-",
       debet: parseNumber(data.debet),
       kredit: parseNumber(data.kredit),
@@ -414,7 +414,7 @@ export const localDB = {
     };
     aduan.unshift(newAduan);
     localStorage.setItem('rtrw_aduan', JSON.stringify(aduan));
-    return { success: true, message: "Aduan/Saran berhasil dikirimkan ke Pengurus RT!" };
+    return { success: true, message: "Aduan/Saran berhasil dikirimkan ke Pengurus!" };
   },
 
   tanggapiAduan(id: string, status: any, tanggapan: string) {
@@ -428,7 +428,7 @@ export const localDB = {
         aduan[idx].tanggalSelesai = new Date().toISOString().split('T')[0];
       }
       localStorage.setItem('rtrw_aduan', JSON.stringify(aduan));
-      return { success: true, message: "Tanggapan RT berhasil disimpan!" };
+      return { success: true, message: "Tanggapan pengurus berhasil disimpan!" };
     }
     return { success: false, message: "Aduan tidak ditemukan!" };
   },

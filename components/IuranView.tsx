@@ -174,7 +174,7 @@ export default function IuranView({
             Matriks Iuran Bulanan Warga
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Monitoring pembayaran iuran Sampah, Keamanan, dan Kas RT setiap bulan
+            Monitoring pembayaran iuran Sampah, Keamanan, dan Kas Warga setiap bulan
           </p>
         </div>
 
@@ -216,7 +216,7 @@ export default function IuranView({
         <div className="lg:col-span-8 bg-gradient-to-r from-slate-900 to-indigo-950 p-4 sm:p-5 rounded-2xl text-white shadow-xs">
           <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-3">
             <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
-              <CreditCard className="w-3.5 h-3.5" /> Standar Tarif Iuran Bulanan RT / RW
+              <CreditCard className="w-3.5 h-3.5" /> Standar Tarif Iuran Bulanan Batujai Salva Residence
             </span>
             <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
               Total Rp 75.000 / Rumah
@@ -235,7 +235,7 @@ export default function IuranView({
               <p className="text-[10px] text-slate-400 mt-0.5 hidden sm:block">Petugas ronda & CCTV</p>
             </div>
             <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">3. Kas RT</p>
+              <p className="text-[10px] text-slate-400 uppercase font-semibold">3. Kas Warga</p>
               <h4 className="text-sm sm:text-base font-bold text-indigo-300 mt-0.5">Rp 25.000</h4>
               <p className="text-[10px] text-slate-400 mt-0.5 hidden sm:block">Lampu, sosial & kas umum</p>
             </div>
@@ -502,7 +502,7 @@ export default function IuranView({
                   </div>
                 </div>
 
-                {/* 3. Kas RT */}
+                {/* 3. Kas Warga */}
                 <div className="flex items-center justify-between gap-3 bg-white p-2.5 rounded-lg border border-slate-200">
                   <label className="flex items-center gap-2 cursor-pointer font-semibold text-slate-700">
                     <input
@@ -511,7 +511,7 @@ export default function IuranView({
                       onChange={(e) => setPayKas(e.target.checked)}
                       className="w-4 h-4 rounded-sm text-indigo-600 focus:ring-indigo-500"
                     />
-                    <span>3. Iuran Kas RT</span>
+                    <span>3. Iuran Kas Warga</span>
                   </label>
                   <div className="flex items-center gap-1">
                     <span className="text-slate-400">Rp</span>
@@ -559,7 +559,7 @@ export default function IuranView({
                     <option value="Transfer BCA">Transfer BCA</option>
                     <option value="Transfer Mandiri">Transfer Mandiri</option>
                     <option value="Transfer BRI">Transfer BRI</option>
-                    <option value="QRIS RT">QRIS RT</option>
+                    <option value="QRIS / E-Wallet">QRIS / E-Wallet</option>
                   </select>
                 </div>
               </div>

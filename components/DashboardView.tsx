@@ -84,7 +84,7 @@ export default function DashboardView({
         <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between sm:col-span-2 lg:col-span-1">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Saldo Kas RT Saat Ini
+              Saldo Kas Saat Ini
             </p>
             <h3 className="text-xl md:text-2xl font-black text-indigo-600 mt-1">
               {formatRupiah(summary.saldoKas)}
@@ -153,16 +153,23 @@ export default function DashboardView({
 
       {/* QUICK SHORTCUT BANNER */}
       <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-2xl p-5 md:p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 bg-white/10 rounded-full border border-white/10">
-            Aplikasi Terpadu RT / RW
-          </span>
-          <h3 className="text-base sm:text-lg font-bold mt-2">
-            Transparansi Keuangan, Administrasi Warga & Aspirasi Lingkungan
-          </h3>
-          <p className="text-xs text-indigo-200 max-w-2xl mt-1">
-            Data kas dan administrasi tersimpan rapi dan aman. Warga dapat memantau status iuran bulanan dan menyampaikan aduan fasilitas secara langsung.
-          </p>
+        <div className="flex items-start gap-4">
+          <img
+            src="/logo.png"
+            alt="Logo Batujai Salva Residence"
+            className="w-14 h-14 rounded-2xl object-contain bg-white p-1 shadow-md shrink-0 border border-indigo-400/30"
+          />
+          <div>
+            <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 bg-white/10 rounded-full border border-white/10">
+              Batujai Salva Residence
+            </span>
+            <h3 className="text-base sm:text-lg font-bold mt-2">
+              Transparansi Keuangan, Administrasi Warga & Aspirasi Lingkungan
+            </h3>
+            <p className="text-xs text-indigo-200 max-w-2xl mt-1">
+              Data kas dan administrasi tersimpan rapi dan aman. Warga dapat memantau status iuran bulanan dan menyampaikan aduan fasilitas secara langsung.
+            </p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
@@ -180,13 +187,13 @@ export default function DashboardView({
         </div>
       </div>
 
-      {/* PROGRAM KERJA RT/RW */}
+      {/* PROGRAM KERJA PERUMAHAN */}
       <div className="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
         <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
           <div>
             <h3 className="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-indigo-600" />
-              Agenda & Program Kerja RT / RW
+              Agenda & Program Kerja Perumahan
             </h3>
             <p className="text-[11px] text-slate-500">
               Kegiatan sosial, pemeliharaan lingkungan, dan program kerja berkala

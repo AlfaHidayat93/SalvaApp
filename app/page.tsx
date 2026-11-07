@@ -168,7 +168,7 @@ export default function Home() {
     if (res.success) {
       setIsAdmin(true);
       sessionStorage.setItem('rtrw_admin', 'true');
-      showToast('Login berhasil sebagai Pengurus RT/RW!');
+      showToast('Login berhasil sebagai Pengurus Batujai Salva Residence!');
       return { success: true };
     }
     return { success: false, message: res.message || 'Username atau password salah!' };
@@ -288,7 +288,7 @@ export default function Home() {
     try {
       const res = await apiPost('tanggapiAduan', { id, status, tanggapan }, DEFAULT_GAS_URL, isLocalMode);
       if (res.success) {
-        showToast(res.message || 'Tanggapan RT berhasil disimpan!');
+        showToast(res.message || 'Tanggapan pengurus berhasil disimpan!');
         await loadAduanData();
         await loadDashboardData();
       } else {

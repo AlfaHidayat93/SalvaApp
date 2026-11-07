@@ -88,8 +88,34 @@ export default function AduanView({
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
-        setFotoUrl(reader.result as string);
+      reader.onload = (event) => {
+        const raw = event.target?.result as string;
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1200;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            setFotoUrl(canvas.toDataURL('image/jpeg', 0.8));
+          } else {
+            setFotoUrl(raw);
+          }
+        };
+        img.src = raw;
       };
       reader.readAsDataURL(file);
     }
@@ -143,7 +169,7 @@ export default function AduanView({
           </span>
           <h3 className="text-base sm:text-lg font-bold mt-2 flex items-center gap-2">
             <MessageSquareQuote className="w-5 h-5 text-indigo-300" />
-            Pusat Aduan, Kritik & Saran Warga RT / RW
+            Pusat Aduan, Kritik & Saran Warga
           </h3>
           <p className="text-xs text-indigo-200 max-w-xl mt-1">
             Sampaikan permasalahan fasilitas, kebersihan, keamanan, atau ide perbaikan lingkungan. Pengirim dapat memilih untuk <strong>anonim</strong> disertai foto bukti.
@@ -204,7 +230,7 @@ export default function AduanView({
         </div>
 
         <span className="text-[11px] text-slate-400 font-medium hidden md:block">
-          Aduan dipantau berkala oleh Pengurus RT / RW
+          Aduan dipantau berkala oleh Pengurus Warga
         </span>
       </div>
 
@@ -297,12 +323,12 @@ export default function AduanView({
                     )}
                   </div>
 
-                  {/* Tanggapan Pengurus RT (Jika Ada) */}
+                  {/* Tanggapan Pengurus (Jika Ada) */}
                   {aduan.tanggapanRT && (
                     <div className="mt-3 bg-emerald-50/80 p-3 rounded-xl border border-emerald-200/80 text-xs">
                       <div className="flex items-center justify-between text-emerald-800 font-bold mb-1">
                         <span className="flex items-center gap-1 text-[11px]">
-                          <Shield className="w-3.5 h-3.5 text-emerald-600" /> Tanggapan Pengurus RT:
+                          <Shield className="w-3.5 h-3.5 text-emerald-600" /> Tanggapan Pengurus:
                         </span>
                         {aduan.tanggalSelesai && (
                           <span className="text-[10px] text-emerald-600 font-normal">
@@ -356,7 +382,7 @@ export default function AduanView({
                   Form Aduan & Saran Warga
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Aspirasi Anda akan langsung diterima oleh jajaran pengurus RT/RW
+                  Aspirasi Anda akan langsung diterima oleh jajaran pengurus lingkungan
                 </p>
               </div>
               <button
@@ -570,7 +596,7 @@ export default function AduanView({
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700">Tanggapan / Catatan Tindak Lanjut RT</label>
+                <label className="font-semibold text-slate-700">Tanggapan / Catatan Tindak Lanjut Pengurus</label>
                 <textarea
                   rows={4}
                   required
@@ -585,7 +611,7 @@ export default function AduanView({
                 type="submit"
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl transition shadow-sm mt-3"
               >
-                Simpan Tanggapan Pengurus RT
+                Simpan Tanggapan Pengurus
               </button>
             </form>
           </div>

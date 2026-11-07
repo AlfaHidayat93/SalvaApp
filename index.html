@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SALVA Residence - Portal Sistem Informasi RT/RW</title>
+  <title>Batujai Salva Residence - Portal Informasi Perumahan</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -113,7 +113,7 @@
       <!-- COPYRIGHT FOOTER -->
       <div class="p-4 border-t border-slate-850 bg-slate-950/40 text-center shrink-0">
         <p class="text-[10px] text-slate-500 font-medium tracking-wide leading-relaxed">
-          &copy; 2026 SALVA RT/RW.<br>
+          &copy; 2026 Batujai Salva Residence.<br>
           Copyright by <a href="https://alfahidayat93.github.io" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-indigo-300 transition hover:underline font-semibold">alfahidayat93.github.io</a>
         </p>
       </div>
@@ -824,7 +824,7 @@
 
         if (!localStorage.getItem('rtrw_pengeluaran')) {
           localStorage.setItem('rtrw_pengeluaran', JSON.stringify([
-            { id: "OUT-1", tanggal: "2026-08-01", kategori: "Iuran Warga", deskripsi: "Saldo Awal Kas RT / RW", debet: 3500000, kredit: 0 },
+            { id: "OUT-1", tanggal: "2026-08-01", kategori: "Iuran Warga", deskripsi: "Saldo Awal Kas Batujai Salva Residence", debet: 3500000, kredit: 0 },
             { id: "OUT-2", tanggal: "2026-08-04", kategori: "Kebersihan & Sampah", deskripsi: "Honor Petugas Pengangkut Sampah Bulan Agustus", debet: 0, kredit: 800000 },
             { id: "OUT-3", tanggal: "2026-08-06", kategori: "Keamanan & Ronda", deskripsi: "Insentif Pos Jaga & Siskamling Malam", debet: 0, kredit: 600000 },
             { id: "OUT-4", tanggal: "2026-08-10", kategori: "Fasilitas & Lampu", deskripsi: "Pembelian 5 unit bohlam LED penerangan gang", debet: 0, kredit: 320000 }
@@ -1020,7 +1020,7 @@
         'pengeluaran': 'Buku Kas Umum & Pengeluaran RT',
         'aduan': 'Pusat Aduan, Kritik & Saran Warga'
       };
-      document.getElementById('page-title').innerText = titles[tab] || 'Portal RT/RW';
+      document.getElementById('page-title').innerText = titles[tab] || 'Portal Batujai Salva Residence';
 
       // Load data spesifik per tab
       if (tab === 'dashboard') loadDashboardData();

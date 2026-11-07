@@ -1,4 +1,4 @@
-# SALVA Residence - Portal Sistem Informasi RT / RW Terpadu
+# Batujai Salva Residence - Portal Informasi Perumahan Terpadu
 
 Aplikasi web modern berbasis **Next.js (App Router)**, **Tailwind CSS**, dan **TypeScript**, yang terintegrasi langsung dengan **Google Sheets & Google Drive** sebagai database cloud realtime, serta dilengkapi dengan mode **Demo Lokal (LocalStorage)** untuk kemudahan uji coba offline.
 
@@ -18,7 +18,7 @@ Aplikasi web modern berbasis **Next.js (App Router)**, **Tailwind CSS**, dan **T
 - **Rincian Status 3 Komponen Iuran**:
   1. 🗑️ **Iuran Sampah** (Standar Rp 20.000)
   2. 🛡️ **Iuran Keamanan & Ronda** (Standar Rp 30.000)
-  3. 🪙 **Iuran Kas RT** (Standar Rp 25.000)
+  3. 🪙 **Iuran Kas Warga** (Standar Rp 25.000)
   - Total Standar: **Rp 75.000 / Rumah / Bulan**
 - **Indikator Visual**:
   - 🟢 **Lunas** (Lengkap Rp 75k)
@@ -26,10 +26,10 @@ Aplikasi web modern berbasis **Next.js (App Router)**, **Tailwind CSS**, dan **T
   - ⚪ **Belum Bayar**
 - **Pencatatan Cepat**: Klik pada kotak bulan di tabel untuk membuka form pembayaran, memilih metode (Tunai, Transfer BCA/Mandiri/BRI, QRIS), dan **otomatis mencatat kas masuk di modul Buku Kas**.
 
-### 3. 💼 Buku Kas & Pengeluaran RT/RW
+### 3. 💼 Buku Kas & Pengeluaran Lingkungan
 - **Pencatatan Transparan**: Mencatat arus kas masuk (Debet) dan kas keluar (Kredit).
 - **Saldo Berjalan Otomatis**: Saldo terhitung secara real-time setiap kali ada transaksi baru.
-- **Kategori Transaksi**: Kebersihan & Sampah, Keamanan & Ronda, Fasilitas & Lampu Jalan, Acara & Sosial, Operasional RT, dll.
+- **Kategori Transaksi**: Kebersihan & Sampah, Keamanan & Ronda, Fasilitas & Lampu Jalan, Acara & Sosial, Operasional Lingkungan, dll.
 - **Upload Bukti Nota / Kwitansi**: Mendukung unggah foto bukti nota/struk belanja dengan fitur popup preview (lightbox zoom) & unduh foto.
 
 ### 4. 📢 Pusat Aduan, Saran & Aspirasi Warga

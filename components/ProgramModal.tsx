@@ -60,7 +60,7 @@ export default function ProgramModal({
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h3 className="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
             <Calendar className="w-4 h-4 text-indigo-600" />
-            {editingProgram ? 'Edit Program Kerja' : 'Tambah Program Kerja RT'}
+            {editingProgram ? 'Edit Program Kerja' : 'Tambah Program Kerja'}
           </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
             <X className="w-5 h-5" />

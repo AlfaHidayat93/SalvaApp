@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SALVA Residence - Portal Sistem Informasi RT/RW",
-  description: "Aplikasi Terpadu RT/RW: Daftar Warga per Blok, Iuran Bulanan, Buku Kas & Pengeluaran, dan Pusat Aduan Warga",
+  title: "Batujai Salva Residence - Portal Informasi Perumahan",
+  description: "Aplikasi Terpadu Batujai Salva Residence: Daftar Warga per Blok, Iuran Bulanan, Buku Kas Lingkungan, dan Pusat Aduan Warga",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

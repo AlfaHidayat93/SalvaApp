@@ -1,5 +1,5 @@
 // ============================================================
-//  SALVA RT/RW – Google Apps Script Backend
+//  Batujai Salva Residence – Google Apps Script Backend
 //  Spreadsheet ID : otomatis dari spreadsheet file ini sendiri
 //  Drive Folder ID: Folder penyimpanan foto aduan & bukti kas
 // ============================================================
@@ -139,7 +139,7 @@ function saveImageToDrive(dataUrlOrBase64, prefix) {
   const str = String(dataUrlOrBase64).trim();
   if (!str) return "";
 
-  // Jika sudah URL internet, tidak perlu upload ulang
+  // Jika sudah merupakan link web (http/https), tidak perlu upload lagi
   if (str.indexOf("http://") === 0 || str.indexOf("https://") === 0) {
     return str;
   }
@@ -171,6 +171,26 @@ function saveImageToDrive(dataUrlOrBase64, prefix) {
   } catch (err) {
     Logger.log("Gagal upload ke Google Drive: " + err.message);
     return "(Gagal upload ke Drive: " + err.message + ")";
+  }
+}
+
+// ============================================================
+//  FUNGSI TEST AKSES GOOGLE DRIVE (KLIK JALANKAN UNTUK OTORISASI)
+// ============================================================
+function testDriveAccess() {
+  try {
+    const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    const folderName = folder.getName();
+    Logger.log("Berhasil akses folder: " + folderName);
+    
+    const testFile = folder.createFile("test_koneksi.txt", "Koneksi Google Drive Batujai Salva Residence OK pada " + new Date());
+    testFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    const url = "https://drive.google.com/uc?id=" + testFile.getId();
+    Logger.log("File tes berhasil dibuat: " + url);
+    return "SUKSES! Folder: " + folderName + " | Link: " + url;
+  } catch (e) {
+    Logger.log("Error akses Drive: " + e.message);
+    return "GAGAL: " + e.message;
   }
 }
 
@@ -214,8 +234,8 @@ function initAllSheets() {
   if (sheetToObjects(cfgSh).length === 0) {
     cfgSh.appendRow(["adminUsername", ADMIN_USERNAME]);
     cfgSh.appendRow(["adminPassword", ADMIN_PASSWORD]);
-    cfgSh.appendRow(["namaRT",        "RT/RW SALVA Residence"]);
-    cfgSh.appendRow(["alamatRT",      "SALVA Residence, Indonesia"]);
+    cfgSh.appendRow(["namaRT",        "Batujai Salva Residence"]);
+    cfgSh.appendRow(["alamatRT",      "Batujai Salva Residence, Indonesia"]);
   }
 
   return { status: "ok", message: "Semua sheet berhasil dibuat / diverifikasi." };
@@ -455,7 +475,7 @@ function simpanPengeluaran(data) {
   sh.appendRow([
     "OUT-" + Date.now(),
     data.tanggal   || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd"),
-    data.kategori  || "Operasional RT",
+    data.kategori  || "Operasional Lingkungan",
     data.deskripsi || "-",
     Number(data.debet)  || 0,
     Number(data.kredit) || 0,
@@ -508,7 +528,7 @@ function kirimAduan(data) {
     "",
     ""
   ]);
-  return { success: true, message: "Aduan/Saran berhasil dikirimkan ke Pengurus RT!", fotoUrl: finalFotoUrl };
+  return { success: true, message: "Aduan/Saran berhasil dikirimkan ke Pengurus!", fotoUrl: finalFotoUrl };
 }
 
 function uploadFotoAduan(params) {
@@ -533,7 +553,7 @@ function tanggapiAduan(id, status, tanggapan) {
       Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd")
     );
   }
-  return { success: true, message: "Tanggapan RT berhasil disimpan!" };
+  return { success: true, message: "Tanggapan pengurus berhasil disimpan!" };
 }
 
 function hapusAduan(id) {

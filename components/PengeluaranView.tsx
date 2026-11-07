@@ -31,7 +31,7 @@ const KATEGORI_OPTIONS = [
   'Keamanan & Ronda',
   'Fasilitas & Lampu',
   'Acara & Sosial',
-  'Operasional RT',
+  'Operasional Lingkungan',
   'Iuran Warga',
   'Lainnya'
 ];
@@ -50,7 +50,7 @@ export default function PengeluaranView({
 
   // Form states
   const [tanggal, setTanggal] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [kategori, setKategori] = useState<string>('Operasional RT');
+  const [kategori, setKategori] = useState<string>('Operasional Lingkungan');
   const [deskripsi, setDeskripsi] = useState<string>('');
   const [jenisTransaksi, setJenisTransaksi] = useState<'kredit' | 'debet'>('kredit'); // Default pengeluaran
   const [nominal, setNominal] = useState<number>(0);
@@ -88,7 +88,7 @@ export default function PengeluaranView({
   const openAddModal = () => {
     setEditingItem(null);
     setTanggal(new Date().toISOString().split('T')[0]);
-    setKategori('Operasional RT');
+    setKategori('Operasional Lingkungan');
     setDeskripsi('');
     setJenisTransaksi('kredit');
     setNominal(0);
@@ -99,7 +99,7 @@ export default function PengeluaranView({
   const openEditModal = (item: Pengeluaran) => {
     setEditingItem(item);
     setTanggal(item.tanggal || new Date().toISOString().split('T')[0]);
-    setKategori(item.kategori || 'Operasional RT');
+    setKategori(item.kategori || 'Operasional Lingkungan');
     setDeskripsi(item.deskripsi || '');
     if (item.debet > 0) {
       setJenisTransaksi('debet');
@@ -116,8 +116,34 @@ export default function PengeluaranView({
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
-        setBukti(reader.result as string);
+      reader.onload = (event) => {
+        const raw = event.target?.result as string;
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1200;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            setBukti(canvas.toDataURL('image/jpeg', 0.8));
+          } else {
+            setBukti(raw);
+          }
+        };
+        img.src = raw;
       };
       reader.readAsDataURL(file);
     }
@@ -144,7 +170,7 @@ export default function PengeluaranView({
         <div>
           <h3 className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
             <Wallet className="w-5 h-5 text-indigo-600" />
-            Buku Kas Umum & Pengeluaran RT / RW
+            Buku Kas Umum & Pengeluaran Lingkungan
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
             Pencatatan kas masuk dan kas keluar dengan saldo berjalan secara transparan
