@@ -41,11 +41,9 @@
   <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 z-50 md:z-30 w-72 md:w-64 bg-slate-900 text-white flex flex-col shadow-2xl md:shadow-none transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shrink-0 select-none">
     <div class="p-4 md:p-5 border-b border-slate-800 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-md shadow-indigo-600/30 flex items-center justify-center">
-          <i class="fa-solid fa-shield-halved text-lg"></i>
-        </div>
+        <img src="logo.png" onerror="this.onerror=null; this.src='public/logo.png';" alt="Logo Batujai Salva Residence" class="w-10 h-10 rounded-xl object-contain bg-white/95 p-0.5 shadow-md shadow-indigo-600/30 shrink-0 border border-indigo-400/30">
         <div>
-          <h1 class="font-bold text-base leading-tight">BATUJAI SALVA Residence</h1>
+          <h1 class="font-bold text-base leading-tight">Batujai Salva Residence</h1>
           <p class="text-[11px] text-slate-400">Portal Warga & Pengurus</p>
         </div>
       </div>
@@ -100,11 +98,11 @@
       <div id="admin-logged-out" class="flex flex-col gap-2">
         <span class="text-[11px] text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-eye text-indigo-400"></i> Mode Warga (Pengunjung)</span>
         <button type="button" onclick="openModal('modal-login')" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2.5 px-3 rounded-xl border border-slate-700 transition flex items-center justify-center gap-1.5 cursor-pointer">
-          <i class="fa-solid fa-lock text-xs"></i> Login Pengurus RT
+          <i class="fa-solid fa-lock text-xs"></i> Login Pengurus
         </button>
       </div>
       <div id="admin-logged-in" class="hidden flex flex-col gap-2">
-        <span class="text-xs text-emerald-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-user-shield"></i> Pengurus RT Aktif</span>
+        <span class="text-xs text-emerald-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-user-shield"></i> Pengurus Aktif</span>
         <button type="button" onclick="logoutAdmin()" class="w-full bg-rose-900/40 hover:bg-rose-900/70 text-rose-300 text-xs font-semibold py-2 px-3 rounded-xl border border-rose-800/80 transition flex items-center justify-center gap-1.5 cursor-pointer">
           <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i> Logout Admin
         </button>
@@ -131,7 +129,7 @@
           <h2 id="page-title" class="text-sm sm:text-base md:text-lg font-bold text-slate-800 truncate leading-tight">
             Dashboard Program Kerja & Kas
           </h2>
-          <p class="text-[11px] text-slate-400 hidden sm:block">SALVA Residence • Portal Rukun Tetangga & Warga</p>
+          <p class="text-[11px] text-slate-400 hidden sm:block">Batujai Salva Residence • Portal Informasi Warga</p>
         </div>
       </div>
       <div class="flex items-center gap-2.5">
@@ -165,7 +163,7 @@
           </div>
           <div class="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between sm:col-span-2 lg:col-span-1">
             <div>
-              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Saldo Kas RT Saat Ini</p>
+              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Saldo Kas Saat Ini</p>
               <h3 id="stat-saldo" class="text-xl md:text-2xl font-black text-indigo-600 mt-1">Rp 0</h3>
               <p class="text-[11px] text-slate-400 mt-0.5">Kas Bersih Siap Pakai</p>
             </div>
@@ -177,26 +175,26 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div class="bg-white p-3.5 rounded-xl border border-slate-200/80">
             <p class="text-[11px] font-medium text-slate-400">Total Warga (KK)</p>
-            <h4 id="stat-total-kk" class="text-base font-bold text-slate-800 mt-0.5">12 Rumah</h4>
+            <h4 id="stat-total-kk" class="text-base font-bold text-slate-800 mt-0.5">-</h4>
           </div>
           <div class="bg-white p-3.5 rounded-xl border border-slate-200/80">
             <p class="text-[11px] font-medium text-slate-400">Total Jiwa Terdata</p>
-            <h4 id="stat-total-jiwa" class="text-base font-bold text-indigo-600 mt-0.5">42 Jiwa</h4>
+            <h4 id="stat-total-jiwa" class="text-base font-bold text-indigo-600 mt-0.5">-</h4>
           </div>
           <div class="bg-white p-3.5 rounded-xl border border-slate-200/80">
             <p class="text-[11px] font-medium text-slate-400">Status Warga</p>
-            <h4 id="stat-status-warga" class="text-xs font-bold text-slate-800 mt-0.5">10 Tetap • 2 Kontrak</h4>
+            <h4 id="stat-status-warga" class="text-xs font-bold text-slate-800 mt-0.5">-</h4>
           </div>
           <div onclick="switchTab('aduan')" class="bg-white p-3.5 rounded-xl border border-slate-200/80 hover:border-indigo-300 transition cursor-pointer flex items-center justify-between group">
             <div>
               <p class="text-[11px] font-medium text-slate-400">Aduan Aktif</p>
-              <h4 id="stat-aduan-aktif" class="text-base font-bold text-amber-600 mt-0.5">2 Masukan</h4>
+              <h4 id="stat-aduan-aktif" class="text-base font-bold text-amber-600 mt-0.5">-</h4>
             </div>
             <i class="fa-solid fa-arrow-right text-slate-400 group-hover:text-indigo-600 transition"></i>
           </div>
         </div>
 
-        <!-- PROGRAM KERJA RT SIDEBAR + DETAIL -->
+        <!-- PROGRAM KERJA SIDEBAR + DETAIL -->
         <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
           <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
             <div>
@@ -282,7 +280,7 @@
             <h3 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
               <i class="fa-solid fa-receipt text-indigo-600"></i> Matriks Iuran Bulanan Warga
             </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Monitoring pembayaran iuran Sampah, Keamanan, dan Kas RT setiap bulan</p>
+            <p class="text-xs text-slate-500 mt-0.5">Monitoring pembayaran iuran Sampah, Keamanan, dan Kas Lingkungan setiap bulan</p>
           </div>
           <div class="flex items-center gap-2.5">
             <select id="filter-iuran-blok" onchange="renderIuranMatrix()" class="py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-hidden cursor-pointer">
@@ -299,7 +297,7 @@
         <div class="bg-gradient-to-r from-slate-900 to-indigo-950 p-4 sm:p-5 rounded-2xl text-white shadow-xs">
           <div class="flex items-center justify-between border-b border-white/10 pb-2.5 mb-3">
             <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-300">
-              <i class="fa-solid fa-tags mr-1"></i> Standar Tarif Iuran Bulanan RT
+              <i class="fa-solid fa-tags mr-1"></i> Standar Tarif Iuran Bulanan
             </span>
             <span class="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
               Total Rp 75.000 / Rumah
@@ -315,7 +313,7 @@
               <h4 class="text-sm sm:text-base font-bold text-blue-300 mt-0.5">Rp 30.000</h4>
             </div>
             <div class="bg-white/5 p-3 rounded-xl border border-white/10">
-              <p class="text-[10px] text-slate-400 uppercase font-semibold">3. Kas RT</p>
+              <p class="text-[10px] text-slate-400 uppercase font-semibold">3. Kas Lingkungan</p>
               <h4 class="text-sm sm:text-base font-bold text-indigo-300 mt-0.5">Rp 25.000</h4>
             </div>
           </div>
@@ -365,7 +363,7 @@
         <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-xs border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h3 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-wallet text-indigo-600"></i> Buku Kas Umum & Pengeluaran RT
+              <i class="fa-solid fa-wallet text-indigo-600"></i> Buku Kas Umum & Pengeluaran
             </h3>
             <p class="text-xs text-slate-500 mt-0.5">Pencatatan kas masuk dan kas keluar dengan saldo berjalan secara transparan</p>
           </div>
@@ -428,7 +426,7 @@
     <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm w-full p-5 sm:p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
-          <i class="fa-solid fa-user-shield text-indigo-600"></i> Login Pengurus RT
+          <i class="fa-solid fa-user-shield text-indigo-600"></i> Login Pengurus
         </h3>
         <button type="button" onclick="closeModal('modal-login')" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
@@ -554,7 +552,7 @@
           <div class="flex items-center justify-between gap-3 bg-white p-2.5 rounded-lg border border-slate-200">
             <label class="flex items-center gap-2 cursor-pointer font-semibold text-slate-700">
               <input type="checkbox" id="chk-kas" checked onchange="updateTotalIuranModal()" class="w-4 h-4 rounded text-indigo-600">
-              <span>3. Iuran Kas RT</span>
+              <span>3. Iuran Kas Lingkungan</span>
             </label>
             <div class="flex items-center gap-1 font-mono font-bold">
               <span>Rp</span>
@@ -580,7 +578,7 @@
               <option value="Transfer BCA">Transfer BCA</option>
               <option value="Transfer Mandiri">Transfer Mandiri</option>
               <option value="Transfer BRI">Transfer BRI</option>
-              <option value="QRIS RT">QRIS RT</option>
+              <option value="QRIS">QRIS</option>
             </select>
           </div>
         </div>
@@ -618,7 +616,7 @@
               <option value="Keamanan & Ronda">Keamanan & Ronda</option>
               <option value="Fasilitas & Lampu">Fasilitas & Lampu</option>
               <option value="Acara & Sosial">Acara & Sosial</option>
-              <option value="Operasional RT">Operasional RT</option>
+              <option value="Operasional Pengurus">Operasional Pengurus</option>
               <option value="Iuran Warga">Iuran Warga (Masuk)</option>
               <option value="Lainnya">Lainnya</option>
             </select>
@@ -651,7 +649,7 @@
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
           <h3 class="font-bold text-slate-800 text-sm sm:text-base">Form Aduan & Saran Warga</h3>
-          <p class="text-xs text-slate-500 mt-0.5">Aspirasi Anda akan ditinjau langsung oleh Pengurus RT</p>
+          <p class="text-xs text-slate-500 mt-0.5">Aspirasi Anda akan ditinjau langsung oleh Pengurus</p>
         </div>
         <button type="button" onclick="closeModal('modal-aduan')" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
@@ -771,12 +769,12 @@
       init() {
         if (!localStorage.getItem('rtrw_warga')) {
           localStorage.setItem('rtrw_warga', JSON.stringify([
-            { id: "WRG-1", blok: "A", noRumah: "01", nama: "Ronanda Pradana", nik: "3275010001", noHp: "081234567801", statusTinggal: "Tetap", jumlahAnggota: 4, keterangan: "Ketua RT" },
+            { id: "WRG-1", blok: "A", noRumah: "01", nama: "Ronanda Pradana", nik: "3275010001", noHp: "081234567801", statusTinggal: "Tetap", jumlahAnggota: 4, keterangan: "Ketua Pengurus" },
             { id: "WRG-2", blok: "A", noRumah: "02", nama: "Tohri Junaidi", nik: "3275010002", noHp: "081234567802", statusTinggal: "Tetap", jumlahAnggota: 3, keterangan: "-" },
             { id: "WRG-3", blok: "A", noRumah: "05", nama: "Miq Prabu", nik: "3275010003", noHp: "081234567803", statusTinggal: "Tetap", jumlahAnggota: 5, keterangan: "Sie Keamanan" },
             { id: "WRG-4", blok: "A", noRumah: "09", nama: "Arif Setiawan", nik: "3275010004", noHp: "081234567804", statusTinggal: "Kontrak", jumlahAnggota: 2, keterangan: "Kontrak s.d Des 2026" },
             { id: "WRG-5", blok: "B", noRumah: "01", nama: "Ical Firmansyah", nik: "3275010005", noHp: "081234567805", statusTinggal: "Tetap", jumlahAnggota: 4, keterangan: "-" },
-            { id: "WRG-6", blok: "B", noRumah: "02", nama: "Pak Surya", nik: "3275010006", noHp: "081234567806", statusTinggal: "Tetap", jumlahAnggota: 3, keterangan: "Penasehat RT" },
+            { id: "WRG-6", blok: "B", noRumah: "02", nama: "Pak Surya", nik: "3275010006", noHp: "081234567806", statusTinggal: "Tetap", jumlahAnggota: 3, keterangan: "Penasehat Lingkungan" },
             { id: "WRG-7", blok: "C", noRumah: "03", nama: "Ikrom Hidayat", nik: "3275010007", noHp: "081234567807", statusTinggal: "Tetap", jumlahAnggota: 4, keterangan: "-" },
             { id: "WRG-8", blok: "H", noRumah: "07", nama: "Amiril Mukminin", nik: "3275010008", noHp: "081234567808", statusTinggal: "Tetap", jumlahAnggota: 4, keterangan: "-" }
           ]));
@@ -785,7 +783,7 @@
         if (!localStorage.getItem('rtrw_programs')) {
           localStorage.setItem('rtrw_programs', JSON.stringify([
             { id: "PROG-1", nama: "Semarak HUT RI ke-81", deskripsi: "Peringatan kemerdekaan dengan lomba anak-anak, jalan sehat keluarga, dan malam ramah tamah warga.", pelaksanaan: "17 Agustus 2026", panitia: "Pak Eko (Ketua Pelaksana)", anggaran: 6075000 },
-            { id: "PROG-2", nama: "Fogging Massal & Kerja Bakti", deskripsi: "Pembersihan saluran air dan fogging nyamuk serentak seluruh blok perumahan.", pelaksanaan: "30 Agustus 2026", panitia: "Sie Kebersihan RT", anggaran: 1250000 },
+            { id: "PROG-2", nama: "Fogging Massal & Kerja Bakti", deskripsi: "Pembersihan saluran air dan fogging nyamuk serentak seluruh blok perumahan.", pelaksanaan: "30 Agustus 2026", panitia: "Sie Kebersihan", anggaran: 1250000 },
             { id: "PROG-3", nama: "Pemasangan 4 Titik CCTV Baru", deskripsi: "Instalasi kamera CCTV resolusi tinggi di jalur masuk gerbang belakang dan blok C.", pelaksanaan: "September 2026", panitia: "Sie Keamanan", anggaran: 3800000 }
           ]));
         }
@@ -882,6 +880,9 @@
         const progs = JSON.parse(localStorage.getItem('rtrw_programs') || '[]');
         const iuran = JSON.parse(localStorage.getItem('rtrw_iuran') || '[]');
         const peng = JSON.parse(localStorage.getItem('rtrw_pengeluaran') || '[]');
+        const warga = JSON.parse(localStorage.getItem('rtrw_warga') || '[]');
+        const aduan = JSON.parse(localStorage.getItem('rtrw_aduan') || '[]');
+
         let totalIuran = 0;
         iuran.forEach(r => totalIuran += (Number(r.totalBayar) || 0));
         let totalDebet = 0, totalKredit = 0;
@@ -890,12 +891,25 @@
           totalKredit += (Number(p.kredit) || 0);
         });
         const totalPemasukan = totalIuran + totalDebet;
+
+        let totalJiwa = 0, tetap = 0, kontrak = 0;
+        warga.forEach(w => {
+          totalJiwa += (Number(w.jumlahAnggota) || 1);
+          if (String(w.statusTinggal) === "Tetap") tetap++; else kontrak++;
+        });
+        const aduanAktif = aduan.filter(a => a.status === "Menunggu" || a.status === "Diproses").length;
+
         return {
           summary: {
             totalIuranWarga: totalPemasukan,
             totalPemasukan: totalPemasukan,
             totalPengeluaran: totalKredit,
-            saldoKas: totalPemasukan - totalKredit
+            saldoKas: totalPemasukan - totalKredit,
+            totalWarga: warga.length,
+            totalJiwa: totalJiwa,
+            tetapCount: tetap,
+            kontrakCount: kontrak,
+            aduanAktif: aduanAktif
           },
           programs: progs
         };
@@ -1017,7 +1031,7 @@
         'dashboard': 'Dashboard Program Kerja & Kas',
         'warga': 'Daftar Warga & Penghuni per Blok',
         'iuran': 'Matriks Iuran Bulanan Warga (Sampah, Keamanan, Kas)',
-        'pengeluaran': 'Buku Kas Umum & Pengeluaran RT',
+        'pengeluaran': 'Buku Kas Umum & Pengeluaran',
         'aduan': 'Pusat Aduan, Kritik & Saran Warga'
       };
       document.getElementById('page-title').innerText = titles[tab] || 'Portal Batujai Salva Residence';
@@ -1065,6 +1079,19 @@
         document.getElementById('stat-masuk').innerText = formatRupiah(res.summary.totalPemasukan || res.summary.totalIuranWarga);
         document.getElementById('stat-keluar').innerText = formatRupiah(res.summary.totalPengeluaran);
         document.getElementById('stat-saldo').innerText = formatRupiah(res.summary.saldoKas);
+
+        if (res.summary.totalWarga !== undefined) {
+          document.getElementById('stat-total-kk').innerText = `${res.summary.totalWarga} Rumah`;
+        }
+        if (res.summary.totalJiwa !== undefined) {
+          document.getElementById('stat-total-jiwa').innerText = `${res.summary.totalJiwa} Jiwa`;
+        }
+        if (res.summary.tetapCount !== undefined && res.summary.kontrakCount !== undefined) {
+          document.getElementById('stat-status-warga').innerText = `${res.summary.tetapCount} Tetap • ${res.summary.kontrakCount} Kontrak`;
+        }
+        if (res.summary.aduanAktif !== undefined) {
+          document.getElementById('stat-aduan-aktif').innerText = `${res.summary.aduanAktif} Masukan`;
+        }
 
         globalPrograms = (res.programs || []).map((p, idx) => ({
           ...p,
@@ -1381,7 +1408,7 @@
     function openAddPengeluaranModal() {
       document.getElementById('out-id').value = '';
       document.getElementById('out-tanggal').value = new Date().toISOString().split('T')[0];
-      document.getElementById('out-kategori').value = 'Operasional RT';
+      document.getElementById('out-kategori').value = 'Operasional Pengurus';
       document.getElementById('out-deskripsi').value = '';
       document.getElementById('out-debet').value = '0';
       document.getElementById('out-kredit').value = '0';
@@ -1435,7 +1462,7 @@
             <div class="text-xs text-slate-500 font-semibold">
               <i class="fa-solid fa-user text-indigo-500 mr-1"></i> ${isAnon ? 'Warga Anonim 🔒 (Dirahasiakan)' : `${a.namaPengirim} (${a.blokRumah || '-'})`}
             </div>
-            ${a.tanggapanRT ? `<div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 text-xs text-emerald-900"><strong>Tanggapan RT:</strong> ${a.tanggapanRT}</div>` : ''}
+            ${a.tanggapanRT ? `<div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 text-xs text-emerald-900"><strong>Tanggapan Pengurus:</strong> ${a.tanggapanRT}</div>` : ''}
           </div>
         `;
       });
@@ -1450,10 +1477,30 @@
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = () => {
-          document.getElementById('aduan-foto-base64').value = reader.result;
-          document.getElementById('aduan-foto-preview-img').src = reader.result;
-          document.getElementById('aduan-foto-preview-box').classList.remove('hidden');
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_DIM = 1200;
+            let width = img.width;
+            let height = img.height;
+            if (width > height && width > MAX_DIM) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            } else if (height > MAX_DIM) {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL('image/jpeg', 0.8);
+            document.getElementById('aduan-foto-base64').value = compressed;
+            document.getElementById('aduan-foto-preview-img').src = compressed;
+            document.getElementById('aduan-foto-preview-box').classList.remove('hidden');
+          };
+          img.src = event.target.result;
         };
         reader.readAsDataURL(file);
       }
@@ -1547,7 +1594,8 @@
     // UTILITIES
     // -------------------------------------------------------------
     function formatRupiah(num) {
-      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num || 0);
+      const val = Math.round(Number(num) || 0);
+      return `Rp ${val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
     }
 
     function parseNumber(val) {

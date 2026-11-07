@@ -4,11 +4,8 @@ export const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbwTpr9pU
 export const DRIVE_FOLDER_ID = "1gJaS_ZvzyFrE2gTOfEX6Y2Dd48OO4L8H";
 
 export function formatRupiah(num: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0
-  }).format(num || 0);
+  const val = Math.round(Number(num) || 0);
+  return `Rp ${val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 }
 
 export function formatDateIndo(dateStr: string): string {

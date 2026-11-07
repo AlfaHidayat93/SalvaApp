@@ -63,7 +63,7 @@ export default function AduanView({
   const [kontak, setKontak] = useState<string>('');
   const [fotoUrl, setFotoUrl] = useState<string>('');
 
-  // Form Tanggapan RT
+  // Form Respon Pengurus
   const [statusRespon, setStatusRespon] = useState<StatusAduan>('Diproses');
   const [tanggapanText, setTanggapanText] = useState<string>('');
 
@@ -535,7 +535,7 @@ export default function AduanView({
         </div>
       )}
 
-      {/* MODAL TINDAK LANJUT & TANGGAPAN RT (ADMIN ONLY) */}
+      {/* MODAL TINDAK LANJUT & RESPON PENGURUS (ADMIN ONLY) */}
       {modalResponOpen && selectedAduan && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
