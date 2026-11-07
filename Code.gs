@@ -145,7 +145,6 @@ function saveImageToDrive(dataUrlOrBase64, prefix) {
   }
 
   try {
-    const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
     let base64 = str;
     let mimeType = "image/jpeg";
     let ext = "jpg";
@@ -163,10 +162,37 @@ function saveImageToDrive(dataUrlOrBase64, prefix) {
     const timeStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd_HHmmss");
     const fileName = (prefix || "FOTO_") + timeStr + "." + ext;
     const blob = Utilities.newBlob(Utilities.base64Decode(base64), mimeType, fileName);
-    const file = folder.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
 
-    // URL langsung lihat foto di browser
+    let file = null;
+
+    // 1. Coba buat file langsung di folder DRIVE_FOLDER_ID
+    if (DRIVE_FOLDER_ID) {
+      try {
+        const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+        file = folder.createFile(blob);
+      } catch (errFolder) {
+        Logger.log("Folder DRIVE_FOLDER_ID akses terbatas (" + errFolder.message + "), membuat file di Drive utama...");
+      }
+    }
+
+    // 2. Fallback: Buat file di Google Drive utama pengguna (ini selalu sukses)
+    if (!file) {
+      file = DriveApp.createFile(blob);
+      try {
+        // Coba masukkan ke folder tempat spreadsheet berada
+        const ss = SpreadsheetApp.getActiveSpreadsheet();
+        const ssFile = DriveApp.getFileById(ss.getId());
+        const parents = ssFile.getParents();
+        if (parents.hasNext()) {
+          const ssParent = parents.next();
+          ssParent.addFile(file);
+        }
+      } catch (e) {
+        // Tetap aman di My Drive
+      }
+    }
+
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     return "https://drive.google.com/uc?id=" + file.getId();
   } catch (err) {
     Logger.log("Gagal upload ke Google Drive: " + err.message);
@@ -179,15 +205,36 @@ function saveImageToDrive(dataUrlOrBase64, prefix) {
 // ============================================================
 function testDriveAccess() {
   try {
-    const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-    const folderName = folder.getName();
-    Logger.log("Berhasil akses folder: " + folderName);
-    
-    const testFile = folder.createFile("test_koneksi.txt", "Koneksi Google Drive Batujai Salva Residence OK pada " + new Date());
+    let folder = null;
+    let locationName = "Google Drive Utama";
+
+    if (DRIVE_FOLDER_ID) {
+      try {
+        folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+        locationName = "Folder: " + folder.getName();
+      } catch (e) {
+        Logger.log("Folder ID tidak dapat diakses langsung: " + e.message);
+      }
+    }
+
+    let testFile = null;
+    if (folder) {
+      try {
+        testFile = folder.createFile("test_koneksi.txt", "Koneksi Google Drive Batujai Salva Residence OK pada " + new Date());
+      } catch (errCreate) {
+        Logger.log("Folder folder.createFile gagal (" + errCreate.message + "), beralih ke DriveApp.createFile...");
+      }
+    }
+
+    if (!testFile) {
+      testFile = DriveApp.createFile("test_koneksi.txt", "Koneksi Google Drive Batujai Salva Residence OK pada " + new Date());
+      locationName = "My Drive (Utama)";
+    }
+
     testFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     const url = "https://drive.google.com/uc?id=" + testFile.getId();
     Logger.log("File tes berhasil dibuat: " + url);
-    return "SUKSES! Folder: " + folderName + " | Link: " + url;
+    return "SUKSES! Tempat: " + locationName + " | Link: " + url;
   } catch (e) {
     Logger.log("Error akses Drive: " + e.message);
     return "GAGAL: " + e.message;
