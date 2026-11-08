@@ -20,7 +20,7 @@ import {
   Check
 } from 'lucide-react';
 import { Aduan, StatusAduan } from '@/lib/types';
-import { formatDateIndo } from '@/lib/api';
+import { formatDateIndo, formatDriveImageUrl } from '@/lib/api';
 
 interface AduanViewProps {
   aduanList: Aduan[];
@@ -297,9 +297,9 @@ export default function AduanView({
                         <ImageIcon className="w-3 h-3" /> Foto Bukti / Kondisi:
                       </p>
                       <img
-                        src={aduan.fotoUrl}
+                        src={formatDriveImageUrl(aduan.fotoUrl)}
                         alt="Bukti Aduan"
-                        onClick={() => onPreviewImage(aduan.fotoUrl!)}
+                        onClick={() => onPreviewImage(formatDriveImageUrl(aduan.fotoUrl))}
                         className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl border border-slate-200 cursor-pointer hover:opacity-90 transition shadow-2xs"
                       />
                     </div>

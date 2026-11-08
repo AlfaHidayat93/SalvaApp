@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { X, Download } from 'lucide-react';
+import { X, Download, ExternalLink } from 'lucide-react';
+import { formatDriveImageUrl } from '@/lib/api';
 
 interface ImageLightboxModalProps {
   imageUrl: string | null;
@@ -10,6 +11,7 @@ interface ImageLightboxModalProps {
 
 export default function ImageLightboxModal({ imageUrl, onClose }: ImageLightboxModalProps) {
   if (!imageUrl) return null;
+  const formattedUrl = formatDriveImageUrl(imageUrl);
 
   return (
     <div
@@ -22,12 +24,13 @@ export default function ImageLightboxModal({ imageUrl, onClose }: ImageLightboxM
       >
         <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
           <a
-            href={imageUrl}
-            download="bukti-lampiran.jpg"
+            href={formattedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="p-2 rounded-xl bg-slate-800/80 text-white hover:bg-slate-700 transition"
-            title="Download Foto"
+            title="Buka Foto di Tab Baru"
           >
-            <Download className="w-4 h-4" />
+            <ExternalLink className="w-4 h-4" />
           </a>
           <button
             onClick={onClose}
@@ -40,7 +43,7 @@ export default function ImageLightboxModal({ imageUrl, onClose }: ImageLightboxM
 
         <div className="p-4 flex items-center justify-center max-h-[85vh] overflow-auto w-full">
           <img
-            src={imageUrl}
+            src={formattedUrl}
             alt="Foto Lampiran"
             className="max-h-[80vh] w-auto max-w-full object-contain rounded-lg"
           />

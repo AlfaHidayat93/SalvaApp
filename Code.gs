@@ -140,8 +140,10 @@ function saveImageToDrive(dataUrlOrBase64, prefix) {
   const str = String(dataUrlOrBase64).trim();
   if (!str) return "";
 
-  // Jika sudah merupakan link web (http/https), tidak perlu upload lagi
+  // Jika sudah merupakan link web (http/https), periksa apakah perlu dinormalisasi
   if (str.indexOf("http://") === 0 || str.indexOf("https://") === 0) {
+    const ucM = str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (ucM) return "https://drive.google.com/thumbnail?id=" + ucM[1] + "&sz=w1000";
     return str;
   }
 
@@ -199,7 +201,8 @@ function saveImageToDrive(dataUrlOrBase64, prefix) {
       Logger.log("Info: Folder sudah memiliki izin publik, setSharing dilewati.");
     }
 
-    return "https://drive.google.com/uc?id=" + file.getId();
+    // Menggunakan Google Drive thumbnail CDN agar tidak diblokir CORS di peramban web
+    return "https://drive.google.com/thumbnail?id=" + file.getId() + "&sz=w1000";
   } catch (err) {
     Logger.log("Gagal upload ke Google Drive: " + err.message);
     return "(Gagal upload ke Drive: " + err.message + ")";
@@ -277,12 +280,13 @@ function migrasiFotoAduanKeDrive() {
 
   let sukses = 0;
   let totalBase64 = 0;
+  let convertedUc = 0;
 
   for (let i = 1; i < data.length; i++) {
     const rawUrl = String(data[i][colFotoIdx] || "").trim();
     if (rawUrl.indexOf("data:image/") === 0) {
       totalBase64++;
-      Logger.log("Memproses baris " + (i + 1) + " (ID: " + data[i][0] + ")...");
+      Logger.log("Memproses upload Base64 baris " + (i + 1) + " (ID: " + data[i][0] + ")...");
       try {
         const driveUrl = saveImageToDrive(rawUrl, "ADUAN_MIGRASI_");
         if (driveUrl && driveUrl.indexOf("http") === 0) {
@@ -295,12 +299,32 @@ function migrasiFotoAduanKeDrive() {
       } catch (err) {
         Logger.log("Error baris " + (i + 1) + ": " + err.message);
       }
+    } else if (rawUrl.indexOf("drive.google.com") !== -1 || rawUrl.indexOf("googleusercontent.com") !== -1) {
+      let fileId = "";
+      const m1 = rawUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (m1) fileId = m1[1];
+      else {
+        const m2 = rawUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (m2) fileId = m2[1];
+        else {
+          const m3 = rawUrl.match(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
+          if (m3) fileId = m3[1];
+        }
+      }
+      if (fileId) {
+        const newUrl = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
+        if (rawUrl !== newUrl) {
+          sh.getRange(i + 1, colFotoIdx + 1).setValue(newUrl);
+          convertedUc++;
+          Logger.log("Link baris " + (i + 1) + " diperbarui ke thumbnail: " + newUrl);
+        }
+      }
     }
   }
 
-  const msg = "Migrasi selesai! Berhasil memindahkan " + sukses + " dari " + totalBase64 + " foto base64 ke Google Drive.";
+  const msg = "Migrasi selesai! " + sukses + " foto base64 diupload ke Drive, dan " + convertedUc + " tautan Drive dikonversi ke format thumbnail.";
   Logger.log(msg);
-  return { success: true, message: msg, sukses: sukses, totalBase64: totalBase64 };
+  return { success: true, message: msg, sukses: sukses, converted: convertedUc };
 }
 
 // ============================================================
@@ -654,10 +678,22 @@ function getAduanData() {
   const list = sheetToObjects(getSheet(SH.ADUAN));
   return list
     .sort((a, b) => String(b.tanggal).localeCompare(String(a.tanggal)))
-    .map(a => ({
-      ...a,
-      isAnonim: String(a.isAnonim) === "true" || a.isAnonim === true
-    }));
+    .map(a => {
+      let fUrl = String(a.fotoUrl || "").trim();
+      if (fUrl && (fUrl.indexOf("drive.google.com") !== -1 || fUrl.indexOf("googleusercontent.com") !== -1)) {
+        const m1 = fUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (m1) fUrl = "https://drive.google.com/thumbnail?id=" + m1[1] + "&sz=w1000";
+        else {
+          const m2 = fUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+          if (m2) fUrl = "https://drive.google.com/thumbnail?id=" + m2[1] + "&sz=w1000";
+        }
+      }
+      return {
+        ...a,
+        fotoUrl: fUrl,
+        isAnonim: String(a.isAnonim) === "true" || a.isAnonim === true
+      };
+    });
 }
 
 function kirimAduan(data) {

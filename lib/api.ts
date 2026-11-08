@@ -40,6 +40,31 @@ export function parseNumber(val: any): number {
   return Number(str) || 0;
 }
 
+export function extractDriveFileId(url: string | null | undefined): string {
+  if (!url) return '';
+  const str = String(url).trim();
+  const m1 = str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m1) return m1[1];
+  const m2 = str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (m2) return m2[1];
+  const m3 = str.match(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
+  if (m3) return m3[1];
+  return '';
+}
+
+export function formatDriveImageUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  const str = String(url).trim();
+  if (!str) return '';
+  if (str.startsWith('data:image/')) return str;
+
+  const fileId = extractDriveFileId(str);
+  if (fileId) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+  }
+  return str;
+}
+
 // -------------------------------------------------------------------------
 // LOCAL STORAGE MOCK DATABASE (DEMO MODE & OFFLINE RESILIENCE)
 // -------------------------------------------------------------------------

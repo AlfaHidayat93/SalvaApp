@@ -751,6 +751,23 @@
     </div>
   </div>
 
+  <!-- MODAL LIGHTBOX FOTO -->
+  <div id="modal-lightbox" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4" onclick="closeModal('modal-lightbox')">
+    <div class="relative max-w-3xl w-full max-h-[90vh] bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col items-center" onclick="event.stopPropagation()">
+      <div class="absolute top-3 right-3 flex items-center gap-2 z-10">
+        <a id="lightbox-link" href="#" target="_blank" rel="noopener noreferrer" class="p-2 rounded-xl bg-slate-800/80 text-white hover:bg-slate-700 transition" title="Buka di Tab Baru">
+          <i class="fa-solid fa-arrow-up-right-from-square text-sm"></i>
+        </a>
+        <button type="button" onclick="closeModal('modal-lightbox')" class="p-2 rounded-xl bg-slate-800/80 text-white hover:bg-slate-700 transition cursor-pointer" title="Tutup">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="p-4 flex items-center justify-center max-h-[85vh] overflow-auto w-full">
+        <img id="lightbox-img" src="" alt="Preview Foto" class="max-h-[80vh] w-auto max-w-full object-contain rounded-lg">
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL PROGRAM -->
   <div id="modal-program" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
@@ -1603,6 +1620,48 @@
       loadDashboardData();
     }
 
+    function extractDriveFileId(url) {
+      if (!url) return '';
+      const str = String(url).trim();
+      const m1 = str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (m1) return m1[1];
+      const m2 = str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (m2) return m2[1];
+      const m3 = str.match(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
+      if (m3) return m3[1];
+      return '';
+    }
+
+    function formatDriveImageUrl(url) {
+      if (!url) return '';
+      const str = String(url).trim();
+      if (!str) return '';
+      if (str.startsWith('data:image/')) return str;
+
+      const fileId = extractDriveFileId(str);
+      if (fileId) {
+        return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+      }
+      return str;
+    }
+
+    function getDriveFallbackUrl(url) {
+      if (!url) return '';
+      const str = String(url).trim();
+      const fileId = extractDriveFileId(str);
+      if (fileId) {
+        return `https://lh3.googleusercontent.com/d/${fileId}`;
+      }
+      return str;
+    }
+
+    function openImageLightbox(url) {
+      const src = formatDriveImageUrl(url);
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox-link').href = src;
+      document.getElementById('modal-lightbox').classList.remove('hidden');
+    }
+
     // -------------------------------------------------------------
     // ADUAN & SARAN LOGIC
     // -------------------------------------------------------------
@@ -1630,7 +1689,23 @@
               <p class="text-[11px] text-slate-400 mt-0.5">${a.tanggal || ''}</p>
             </div>
             <p class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">${a.deskripsi}</p>
-            ${a.fotoUrl ? `<img src="${a.fotoUrl}" class="w-24 h-24 object-cover rounded-lg border">` : ''}
+            ${a.fotoUrl ? `
+              <div class="pt-1">
+                <div onclick="openImageLightbox('${a.fotoUrl.replace(/'/g, "\\'")}')" class="group relative inline-block cursor-pointer" title="Klik untuk perbesar foto">
+                  <img src="${formatDriveImageUrl(a.fotoUrl)}" 
+                       onerror="if(!this.dataset.fallback){this.dataset.fallback='1'; this.src='${getDriveFallbackUrl(a.fotoUrl)}';}else{this.style.display='none'; this.nextElementSibling.classList.remove('hidden');}" 
+                       class="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl border border-slate-200 shadow-2xs group-hover:opacity-90 transition" 
+                       alt="Bukti Aduan">
+                  <div class="hidden w-24 h-24 sm:w-28 sm:h-28 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center justify-center text-center p-2 text-slate-400">
+                    <i class="fa-solid fa-image text-slate-300 text-lg mb-1"></i>
+                    <span class="text-[9px] font-semibold text-indigo-600">Buka Foto</span>
+                  </div>
+                  <span class="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-medium flex items-center gap-1 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition">
+                    <i class="fa-solid fa-magnifying-glass-plus text-[8px]"></i> Lihat
+                  </span>
+                </div>
+              </div>
+            ` : ''}
             <div class="text-xs text-slate-500 font-semibold">
               <i class="fa-solid fa-user text-indigo-500 mr-1"></i> ${isAnon ? 'Warga Anonim 🔒 (Dirahasiakan)' : `${a.namaPengirim} (${a.blokRumah || '-'})`}
             </div>
