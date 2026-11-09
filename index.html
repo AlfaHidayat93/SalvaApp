@@ -233,9 +233,17 @@
             </h3>
             <p class="text-xs text-slate-500 mt-0.5">Pendataan kependudukan, status tinggal, dan kontak kepala keluarga</p>
           </div>
-          <button type="button" onclick="openAddWargaModal()" class="admin-only hidden bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 px-3.5 rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-user-plus"></i> Tambah Data Warga
-          </button>
+          <div class="admin-only hidden flex flex-wrap items-center gap-2">
+            <button type="button" onclick="downloadWargaCSVTemplate()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2 px-3 rounded-xl transition border border-slate-300 flex items-center gap-1.5 cursor-pointer" title="Download Template Format CSV">
+              <i class="fa-solid fa-file-arrow-down text-indigo-600"></i> Unduh Template CSV
+            </button>
+            <button type="button" onclick="openImportWargaModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3.5 rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-solid fa-file-import"></i> Import CSV
+            </button>
+            <button type="button" onclick="openAddWargaModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 px-3.5 rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-solid fa-user-plus"></i> Tambah Data Warga
+            </button>
+          </div>
         </div>
 
         <!-- FILTER & SEARCH WARGA -->
@@ -496,6 +504,98 @@
           Simpan Data Warga
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL IMPORT WARGA VIA CSV -->
+  <div id="modal-import-warga" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-2xl w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+            <i class="fa-solid fa-file-csv text-emerald-600 text-lg"></i>
+            Import Data Warga dari CSV
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">
+            ID warga dibuat otomatis oleh sistem tanpa perlu Anda isi manual
+          </p>
+        </div>
+        <button type="button" onclick="closeModal('modal-import-warga')" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Panduan & Download Template -->
+      <div class="bg-indigo-50/60 border border-indigo-200/60 rounded-xl p-3.5 text-xs text-indigo-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <p class="font-semibold flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check text-indigo-600"></i>
+            Format kolom template resmi:
+          </p>
+          <p class="text-[11px] text-indigo-700 mt-0.5 font-mono">
+            Blok, NoRumah, Nama, NIK, NoHP, StatusTinggal, JumlahAnggota, Keterangan
+          </p>
+        </div>
+        <button type="button" onclick="downloadWargaCSVTemplate()" class="bg-white hover:bg-indigo-100 text-indigo-700 border border-indigo-300 text-xs font-semibold py-1.5 px-3 rounded-lg transition shrink-0 flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-download"></i> Unduh Template CSV
+        </button>
+      </div>
+
+      <!-- Upload Zone -->
+      <div class="space-y-2">
+        <label class="text-xs font-semibold text-slate-700 block">Pilih File .CSV dari Komputer / HP</label>
+        <div class="border-2 border-dashed border-slate-300 hover:border-indigo-400 bg-slate-50/70 hover:bg-indigo-50/20 rounded-xl p-6 text-center transition cursor-pointer relative">
+          <input type="file" id="csv-file-input" accept=".csv,text/csv" onchange="handleWargaCSVFile(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+          <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 mx-auto mb-2 block"></i>
+          <p id="csv-file-label" class="text-xs font-semibold text-slate-700">Klik atau geser file .CSV ke sini</p>
+          <p class="text-[11px] text-slate-400 mt-1">Mendukung pemisah koma (,) maupun titik koma (;) dari Excel</p>
+        </div>
+      </div>
+
+      <div id="csv-error-box" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+        <i class="fa-solid fa-triangle-exclamation text-rose-600 shrink-0"></i>
+        <span id="csv-error-msg"></span>
+      </div>
+
+      <!-- Preview Table Container -->
+      <div id="csv-preview-container" class="hidden space-y-3 pt-2">
+        <div class="flex items-center justify-between text-xs">
+          <span id="csv-preview-summary" class="font-bold text-slate-700"></span>
+          <span id="csv-preview-warning" class="text-amber-600 text-[11px] font-medium hidden"></span>
+        </div>
+
+        <div class="border border-slate-200 rounded-xl overflow-x-auto max-h-56">
+          <table class="w-full text-left text-xs text-slate-700">
+            <thead class="bg-slate-100 text-[11px] uppercase tracking-wider font-semibold text-slate-600 sticky top-0">
+              <tr>
+                <th class="py-2 px-3">Blok</th>
+                <th class="py-2 px-3">No</th>
+                <th class="py-2 px-3">Nama</th>
+                <th class="py-2 px-3">WhatsApp</th>
+                <th class="py-2 px-3">Status</th>
+                <th class="py-2 px-3 text-center">Jiwa</th>
+              </tr>
+            </thead>
+            <tbody id="csv-preview-tbody" class="divide-y divide-slate-100 text-[11px]"></tbody>
+          </table>
+        </div>
+
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
+          <i class="fa-solid fa-circle-info text-amber-600 shrink-0 mt-0.5"></i>
+          <p class="text-[11px] leading-relaxed">
+            <strong>Catatan:</strong> Jika Blok & No Rumah sudah terdaftar sebelumnya di sistem, data warga tersebut akan otomatis <strong>diperbarui (update)</strong>. Data baru akan otomatis dibuatkan ID warga.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+        <button type="button" onclick="closeModal('modal-import-warga')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer">
+          Batal
+        </button>
+        <button type="button" id="btn-confirm-import-csv" disabled onclick="confirmImportWargaCSV()" class="px-4 py-2 rounded-xl text-xs font-semibold text-white transition flex items-center gap-1.5 shadow-xs bg-slate-300 cursor-not-allowed">
+          <i class="fa-solid fa-check"></i> <span id="btn-confirm-import-label">Pilih File CSV Dulu</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1056,6 +1156,38 @@
         localStorage.setItem('rtrw_warga', JSON.stringify(list));
         return { success: true, message: "Data warga berhasil disimpan!" };
       }
+      if (action === "simpanWargaBatch") {
+        let list = JSON.parse(localStorage.getItem('rtrw_warga') || '[]');
+        let added = 0, updated = 0;
+        const now = Date.now();
+        (data.list || []).forEach((item, idx) => {
+          const blok = String(item.blok || '').trim().toUpperCase();
+          const noRumah = String(item.noRumah || '').trim();
+          const nama = String(item.nama || '').trim();
+          if (!blok || !nama) return;
+          const existingIdx = list.findIndex(w => w.blok.toUpperCase() === blok && String(w.noRumah).trim() === noRumah);
+          const rec = {
+            id: existingIdx !== -1 ? list[existingIdx].id : `WRG-${now + idx}`,
+            blok,
+            noRumah,
+            nama,
+            nik: item.nik || '-',
+            noHp: item.noHp || '-',
+            statusTinggal: item.statusTinggal || 'Tetap',
+            jumlahAnggota: Number(item.jumlahAnggota) || 1,
+            keterangan: item.keterangan || '-'
+          };
+          if (existingIdx !== -1) {
+            list[existingIdx] = rec;
+            updated++;
+          } else {
+            list.push(rec);
+            added++;
+          }
+        });
+        localStorage.setItem('rtrw_warga', JSON.stringify(list));
+        return { success: true, message: `Berhasil mengimpor! ${added} warga baru ditambahkan, ${updated} data diperbarui.` };
+      }
       if (action === "hapusWarga") {
         let list = JSON.parse(localStorage.getItem('rtrw_warga') || '[]');
         list = list.filter(w => w.id !== data.id);
@@ -1367,6 +1499,235 @@
       await apiPost('simpanWarga', { data });
       closeModal('modal-warga');
       loadWargaData();
+    }
+
+    // -------------------------------------------------------------
+    // CSV IMPORT WARGA LOGIC
+    // -------------------------------------------------------------
+    let parsedCsvWargaList = [];
+
+    function downloadWargaCSVTemplate() {
+      const csvContent =
+        "Blok,NoRumah,Nama,NIK,NoHP,StatusTinggal,JumlahAnggota,Keterangan\r\n" +
+        "A,01,Ronanda Pradana,3275012304910001,081234567801,Tetap,4,Kepala Keluarga / Blok A\r\n" +
+        "A,02,Tohri Junaidi,3275012304910002,081234567802,Tetap,3,Warga Tetap\r\n" +
+        "B,05,Ahmad Fauzi,-,081987654321,Kontrak,2,Kontrak 1 Tahun\r\n";
+
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "template_data_warga_salva.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function openImportWargaModal() {
+      parsedCsvWargaList = [];
+      document.getElementById('csv-file-input').value = '';
+      document.getElementById('csv-file-label').innerText = 'Klik atau geser file .CSV ke sini';
+      document.getElementById('csv-error-box').classList.add('hidden');
+      document.getElementById('csv-preview-container').classList.add('hidden');
+
+      const btn = document.getElementById('btn-confirm-import-csv');
+      btn.disabled = true;
+      btn.className = "px-4 py-2 rounded-xl text-xs font-semibold text-white transition flex items-center gap-1.5 shadow-xs bg-slate-300 cursor-not-allowed";
+      document.getElementById('btn-confirm-import-label').innerText = 'Pilih File CSV Dulu';
+
+      openModal('modal-import-warga');
+    }
+
+    function handleWargaCSVFile(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      document.getElementById('csv-file-label').innerHTML = `<span class="text-indigo-600 font-bold">${file.name}</span>`;
+      document.getElementById('csv-error-box').classList.add('hidden');
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const text = evt.target.result;
+          const parsed = parseWargaCSVString(text);
+
+          if (!parsed.validRows || parsed.validRows.length === 0) {
+            document.getElementById('csv-error-msg').innerText = 'Tidak ada baris data warga yang valid. Pastikan kolom Blok dan Nama terisi.';
+            document.getElementById('csv-error-box').classList.remove('hidden');
+            document.getElementById('csv-preview-container').classList.add('hidden');
+            return;
+          }
+
+          parsedCsvWargaList = parsed.validRows;
+
+          // Render Preview Table
+          const tbody = document.getElementById('csv-preview-tbody');
+          tbody.innerHTML = '';
+          parsed.validRows.slice(0, 10).forEach(row => {
+            tbody.innerHTML += `
+              <tr class="hover:bg-slate-50">
+                <td class="py-1.5 px-3 font-mono font-bold text-indigo-700">Blok ${row.blok}</td>
+                <td class="py-1.5 px-3 font-mono">${row.noRumah}</td>
+                <td class="py-1.5 px-3 font-medium text-slate-800">${row.nama}</td>
+                <td class="py-1.5 px-3 text-slate-500">${row.noHp || '-'}</td>
+                <td class="py-1.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 font-semibold text-slate-600">${row.statusTinggal}</span></td>
+                <td class="py-1.5 px-3 text-center font-mono">${row.jumlahAnggota}</td>
+              </tr>
+            `;
+          });
+
+          if (parsed.validRows.length > 10) {
+            tbody.innerHTML += `
+              <tr>
+                <td colspan="6" class="py-2 text-center text-[11px] text-slate-400 bg-slate-50 border-t">
+                  ... dan ${parsed.validRows.length - 10} data lainnya
+                </td>
+              </tr>
+            `;
+          }
+
+          document.getElementById('csv-preview-summary').innerText = `Pratinjau Data Warga (${parsed.validRows.length} baris siap diimpor):`;
+
+          const warnEl = document.getElementById('csv-preview-warning');
+          if (parsed.errorCount > 0) {
+            warnEl.innerText = `⚠️ ${parsed.errorCount} baris diabaikan (Blok/Nama kosong)`;
+            warnEl.classList.remove('hidden');
+          } else {
+            warnEl.classList.add('hidden');
+          }
+
+          document.getElementById('csv-preview-container').classList.remove('hidden');
+
+          // Enable confirm button
+          const btn = document.getElementById('btn-confirm-import-csv');
+          btn.disabled = false;
+          btn.className = "px-4 py-2 rounded-xl text-xs font-semibold text-white transition flex items-center gap-1.5 shadow-xs bg-emerald-600 hover:bg-emerald-700 cursor-pointer";
+          document.getElementById('btn-confirm-import-label').innerText = `Simpan & Impor (${parsed.validRows.length} Warga)`;
+
+        } catch (err) {
+          document.getElementById('csv-error-msg').innerText = 'Gagal memproses file CSV: ' + err.message;
+          document.getElementById('csv-error-box').classList.remove('hidden');
+        }
+      };
+      reader.onerror = function() {
+        document.getElementById('csv-error-msg').innerText = 'Gagal membaca file CSV.';
+        document.getElementById('csv-error-box').classList.remove('hidden');
+      };
+      reader.readAsText(file);
+    }
+
+    function parseWargaCSVString(text) {
+      const firstLine = text.split(/\r\n|\n|\r/)[0] || '';
+      const commaCount = (firstLine.match(/,/g) || []).length;
+      const semicolonCount = (firstLine.match(/;/g) || []).length;
+      const delimiter = semicolonCount > commaCount ? ';' : ',';
+
+      const lines = [];
+      let row = [];
+      let inQuotes = false;
+      let currentField = '';
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && nextChar === '"') {
+            currentField += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === delimiter && !inQuotes) {
+          row.push(currentField.trim());
+          currentField = '';
+        } else if ((char === '\r' || char === '\n') && !inQuotes) {
+          if (char === '\r' && nextChar === '\n') i++;
+          row.push(currentField.trim());
+          currentField = '';
+          if (row.some(f => f.length > 0)) lines.push(row);
+          row = [];
+        } else {
+          currentField += char;
+        }
+      }
+      if (currentField.length > 0 || row.length > 0) {
+        row.push(currentField.trim());
+        if (row.some(f => f.length > 0)) lines.push(row);
+      }
+
+      if (lines.length < 2) return { validRows: [], errorCount: 0 };
+
+      const rawHeaders = lines[0].map(h => h.toLowerCase().replace(/[\s_-]+/g, ''));
+      const headerMap = {};
+      rawHeaders.forEach((h, idx) => {
+        if (h.includes('blok')) headerMap.blok = idx;
+        else if (h.includes('norumah') || h.includes('nomor') || h === 'no' || h.includes('rumah')) headerMap.noRumah = idx;
+        else if (h.includes('nama')) headerMap.nama = idx;
+        else if (h.includes('nik')) headerMap.nik = idx;
+        else if (h.includes('hp') || h.includes('telp') || h.includes('wa') || h.includes('kontak')) headerMap.noHp = idx;
+        else if (h.includes('status') || h.includes('hunian')) headerMap.statusTinggal = idx;
+        else if (h.includes('jiwa') || h.includes('anggota') || h.includes('keluarga')) headerMap.jumlahAnggota = idx;
+        else if (h.includes('ket') || h.includes('catatan')) headerMap.keterangan = idx;
+      });
+
+      const validRows = [];
+      let errorCount = 0;
+
+      for (let r = 1; r < lines.length; r++) {
+        const rData = lines[r];
+        let blok = headerMap.blok !== undefined ? (rData[headerMap.blok] || '').toUpperCase() : (rData[0] || '').toUpperCase();
+        const noRumah = headerMap.noRumah !== undefined ? (rData[headerMap.noRumah] || '') : (rData[1] || '');
+        const nama = headerMap.nama !== undefined ? (rData[headerMap.nama] || '') : (rData[2] || '');
+
+        blok = blok.replace(/BLOK/i, '').trim() || blok;
+
+        if (!blok || !nama) {
+          errorCount++;
+          continue;
+        }
+
+        const rawStatus = headerMap.statusTinggal !== undefined ? (rData[headerMap.statusTinggal] || '').toLowerCase() : (rData[5] || '').toLowerCase();
+        const statusTinggal = ['kontrak', 'kost', 'kosong'].some(s => rawStatus.includes(s)) ? 'Kontrak' : 'Tetap';
+        const rawAnggota = headerMap.jumlahAnggota !== undefined ? rData[headerMap.jumlahAnggota] : rData[6];
+        const jumlahAnggota = parseInt(String(rawAnggota || '1').replace(/[^\d]/g, ''), 10) || 1;
+
+        validRows.push({
+          blok,
+          noRumah: String(noRumah).trim(),
+          nama: String(nama).trim(),
+          nik: headerMap.nik !== undefined ? (rData[headerMap.nik] || '-') : (rData[3] || '-'),
+          noHp: headerMap.noHp !== undefined ? (rData[headerMap.noHp] || '-') : (rData[4] || '-'),
+          statusTinggal,
+          jumlahAnggota,
+          keterangan: headerMap.keterangan !== undefined ? (rData[headerMap.keterangan] || '-') : (rData[7] || '-')
+        });
+      }
+
+      return { validRows, errorCount };
+    }
+
+    async function confirmImportWargaCSV() {
+      if (!parsedCsvWargaList || parsedCsvWargaList.length === 0) return;
+
+      const btn = document.getElementById('btn-confirm-import-csv');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sedang Mengimpor...`;
+
+      try {
+        const res = await apiPost('simpanWargaBatch', { list: parsedCsvWargaList });
+        alert(res.message || 'Data warga berhasil diimpor!');
+        closeModal('modal-import-warga');
+        loadWargaData();
+        loadDashboardData();
+        if (typeof loadIuranData === 'function') loadIuranData();
+      } catch (err) {
+        alert('Gagal mengimpor data: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> <span id="btn-confirm-import-label">Simpan & Impor</span>`;
+      }
     }
 
     // -------------------------------------------------------------

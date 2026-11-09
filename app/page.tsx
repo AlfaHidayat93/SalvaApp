@@ -269,6 +269,28 @@ export default function Home() {
     }
   };
 
+  const handleImportWarga = async (list: Partial<Warga>[]): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const res = await apiPost('simpanWargaBatch', { list }, DEFAULT_GAS_URL, isLocalMode);
+      if (res.success) {
+        showToast(res.message || 'Data warga berhasil diimpor!');
+        await loadWargaData();
+        await loadDashboardData();
+        await loadIuranMatrixData();
+        return true;
+      } else {
+        showToast(res.message || 'Gagal mengimpor data warga.', 'error');
+        return false;
+      }
+    } catch (e: any) {
+      showToast(e.message || 'Terjadi kesalahan saat impor CSV.', 'error');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Iuran CRUD
   const handleSaveIuran = async (data: any) => {
     setIsLoading(true);
@@ -465,6 +487,7 @@ export default function Home() {
               isAdmin={isAdmin}
               onSaveWarga={handleSaveWarga}
               onDeleteWarga={handleDeleteWarga}
+              onImportWarga={handleImportWarga}
             />
           )}
 

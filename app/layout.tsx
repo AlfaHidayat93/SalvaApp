@@ -2,12 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Batujai Salva Residence - Portal Informasi Perumahan",
-  description: "Aplikasi Terpadu Batujai Salva Residence: Daftar Warga per Blok, Iuran Bulanan, Buku Kas Lingkungan, dan Pusat Aduan Warga",
-  icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
-  },
+  title: "SALVA Residence - Portal Sistem Informasi",
+  description: "Aplikasi Terpadu: Daftar Warga per Blok, Iuran Bulanan, Buku Kas & Pengeluaran, dan Pusat Aduan Warga",
 };
 
 export default function RootLayout({

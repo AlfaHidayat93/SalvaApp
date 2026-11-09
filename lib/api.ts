@@ -248,6 +248,53 @@ export const localDB = {
     return { success: true, message: "Data warga berhasil dihapus!" };
   },
 
+  importWargaBatch(list: Partial<Warga>[]) {
+    this.init();
+    let wargaList: Warga[] = JSON.parse(localStorage.getItem('rtrw_warga') || '[]');
+    let added = 0;
+    let updated = 0;
+    const now = Date.now();
+
+    list.forEach((item, idx) => {
+      const blok = String(item.blok || '').trim().toUpperCase();
+      const noRumah = String(item.noRumah || '').trim();
+      const nama = String(item.nama || '').trim();
+      if (!blok || !nama) return;
+
+      const existingIndex = wargaList.findIndex(
+        w => w.blok.toUpperCase() === blok && String(w.noRumah).trim() === noRumah
+      );
+
+      const wargaData: Warga = {
+        id: existingIndex !== -1 ? wargaList[existingIndex].id : `WRG-${now + idx}`,
+        blok,
+        noRumah,
+        nama,
+        nik: item.nik || '-',
+        noHp: item.noHp || '-',
+        statusTinggal: (item.statusTinggal as any) || 'Tetap',
+        jumlahAnggota: Number(item.jumlahAnggota) || 1,
+        keterangan: item.keterangan || '-'
+      };
+
+      if (existingIndex !== -1) {
+        wargaList[existingIndex] = wargaData;
+        updated++;
+      } else {
+        wargaList.push(wargaData);
+        added++;
+      }
+    });
+
+    localStorage.setItem('rtrw_warga', JSON.stringify(wargaList));
+    return {
+      success: true,
+      message: `Berhasil mengimpor! ${added} warga baru ditambahkan, ${updated} warga diperbarui.`,
+      added,
+      updated
+    };
+  },
+
   getIuranMatrix(tahun: number = 2026, selectedBlok: string = "ALL") {
     this.init();
     const { optionsBlok, list: wargaList } = this.getWarga(selectedBlok);
@@ -648,6 +695,7 @@ function mockApiPost(action: string, data: Record<string, any>): any {
     return { success: false, message: "Username atau Password salah!" };
   }
   if (action === "simpanWarga") return localDB.saveWarga(data.data);
+  if (action === "simpanWargaBatch") return localDB.importWargaBatch(data.list);
   if (action === "hapusWarga") return localDB.deleteWarga(data.id);
   if (action === "simpanIuranBulanan") return localDB.saveIuranBulanan(data.data);
   if (action === "simpanPengeluaran") return localDB.savePengeluaran(data.data);
@@ -659,4 +707,120 @@ function mockApiPost(action: string, data: Record<string, any>): any {
   if (action === "hapusProgram") return localDB.deleteProgram(data.id);
 
   return { status: "error", message: "Aksi POST tidak dikenal" };
+}
+
+// -------------------------------------------------------------------------
+// CSV IMPORT UTILITIES FOR WARGA
+// -------------------------------------------------------------------------
+export function downloadWargaCSVTemplate(): void {
+  const csvContent =
+    "Blok,NoRumah,Nama,NIK,NoHP,StatusTinggal,JumlahAnggota,Keterangan\r\n" +
+    "A,01,Ronanda Pradana,3275012304910001,081234567801,Tetap,4,Kepala Keluarga / Blok A\r\n" +
+    "A,02,Tohri Junaidi,3275012304910002,081234567802,Tetap,3,Warga Baru\r\n" +
+    "B,05,Ahmad Fauzi,-,081987654321,Kontrak,2,Kontrak 1 Tahun\r\n";
+
+  const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "template_data_warga_salva.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export function parseWargaCSV(text: string): { validRows: Partial<Warga>[]; errorCount: number; totalCount: number } {
+  const firstLine = text.split(/\r\n|\n|\r/)[0] || '';
+  const commaCount = (firstLine.match(/,/g) || []).length;
+  const semicolonCount = (firstLine.match(/;/g) || []).length;
+  const delimiter = semicolonCount > commaCount ? ';' : ',';
+
+  const lines: string[][] = [];
+  let row: string[] = [];
+  let inQuotes = false;
+  let currentField = '';
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        currentField += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === delimiter && !inQuotes) {
+      row.push(currentField.trim());
+      currentField = '';
+    } else if ((char === '\r' || char === '\n') && !inQuotes) {
+      if (char === '\r' && nextChar === '\n') i++;
+      row.push(currentField.trim());
+      currentField = '';
+      if (row.some(f => f.length > 0)) lines.push(row);
+      row = [];
+    } else {
+      currentField += char;
+    }
+  }
+  if (currentField.length > 0 || row.length > 0) {
+    row.push(currentField.trim());
+    if (row.some(f => f.length > 0)) lines.push(row);
+  }
+
+  if (lines.length < 2) return { validRows: [], errorCount: 0, totalCount: 0 };
+
+  const rawHeaders = lines[0].map(h => h.toLowerCase().replace(/[\s_-]+/g, ''));
+  const headerMap: Record<string, number> = {};
+  rawHeaders.forEach((h, idx) => {
+    if (h.includes('blok')) headerMap.blok = idx;
+    else if (h.includes('norumah') || h.includes('nomor') || h === 'no' || h.includes('rumah')) headerMap.noRumah = idx;
+    else if (h.includes('nama')) headerMap.nama = idx;
+    else if (h.includes('nik')) headerMap.nik = idx;
+    else if (h.includes('hp') || h.includes('telp') || h.includes('wa') || h.includes('kontak')) headerMap.noHp = idx;
+    else if (h.includes('status') || h.includes('hunian')) headerMap.statusTinggal = idx;
+    else if (h.includes('jiwa') || h.includes('anggota') || h.includes('keluarga')) headerMap.jumlahAnggota = idx;
+    else if (h.includes('ket') || h.includes('catatan')) headerMap.keterangan = idx;
+  });
+
+  const validRows: Partial<Warga>[] = [];
+  let errorCount = 0;
+
+  for (let r = 1; r < lines.length; r++) {
+    const rData = lines[r];
+    let blok = headerMap.blok !== undefined ? (rData[headerMap.blok] || '').toUpperCase() : (rData[0] || '').toUpperCase();
+    const noRumah = headerMap.noRumah !== undefined ? (rData[headerMap.noRumah] || '') : (rData[1] || '');
+    const nama = headerMap.nama !== undefined ? (rData[headerMap.nama] || '') : (rData[2] || '');
+
+    blok = blok.replace(/BLOK/i, '').trim() || blok;
+
+    if (!blok || !nama) {
+      errorCount++;
+      continue;
+    }
+
+    const rawStatus = headerMap.statusTinggal !== undefined ? (rData[headerMap.statusTinggal] || '').toLowerCase() : (rData[5] || '').toLowerCase();
+    const statusTinggal: any = ['kontrak', 'kost', 'kosong'].some(s => rawStatus.includes(s)) ? 'Kontrak' : 'Tetap';
+    const rawAnggota = headerMap.jumlahAnggota !== undefined ? rData[headerMap.jumlahAnggota] : rData[6];
+    const jumlahAnggota = parseInt(String(rawAnggota || '1').replace(/[^\d]/g, ''), 10) || 1;
+
+    validRows.push({
+      blok,
+      noRumah: String(noRumah).trim(),
+      nama: String(nama).trim(),
+      nik: headerMap.nik !== undefined ? (rData[headerMap.nik] || '-') : (rData[3] || '-'),
+      noHp: headerMap.noHp !== undefined ? (rData[headerMap.noHp] || '-') : (rData[4] || '-'),
+      statusTinggal,
+      jumlahAnggota,
+      keterangan: headerMap.keterangan !== undefined ? (rData[headerMap.keterangan] || '-') : (rData[7] || '-')
+    });
+  }
+
+  return {
+    validRows,
+    errorCount,
+    totalCount: lines.length - 1
+  };
 }

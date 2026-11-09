@@ -54,6 +54,7 @@ function handleRequest(e, isPost) {
       // ── POST ──
       case "checkLogin"          : result = checkLogin(params);              break;
       case "simpanWarga"         : result = simpanWarga(params.data);        break;
+      case "simpanWargaBatch"    : result = simpanWargaBatch(params.list);   break;
       case "hapusWarga"          : result = hapusWarga(params.id);           break;
       case "simpanIuranBulanan"  : result = simpanIuranBulanan(params.data); break;
       case "simpanPengeluaran"   : result = simpanPengeluaran(params.data);  break;
@@ -469,6 +470,71 @@ function hapusWarga(id) {
   if (rowNum < 0) return { success: false, message: "Data tidak ditemukan." };
   sh.deleteRow(rowNum);
   return { success: true, message: "Data warga berhasil dihapus!" };
+}
+
+// Tambah / Perbarui Data Warga Secara Massal via CSV Import (Otomatis Buat ID)
+function simpanWargaBatch(list) {
+  const sh = getSheet(SH.WARGA);
+  if (!sh) return { success: false, message: "Sheet Warga tidak ditemukan." };
+  if (!Array.isArray(list) || list.length === 0) {
+    return { success: false, message: "Tidak ada data warga untuk diimpor." };
+  }
+
+  const existingData = sh.getDataRange().getValues();
+  const existingMap = new Map(); // key: "BLOK-NORUMAH" => row index (1-based)
+  for (let i = 1; i < existingData.length; i++) {
+    const b = String(existingData[i][1] || "").trim().toUpperCase();
+    const nr = String(existingData[i][2] || "").trim();
+    if (b && nr) {
+      existingMap.set(b + "-" + nr, i + 1);
+    }
+  }
+
+  let added = 0;
+  let updated = 0;
+  const newRows = [];
+  const now = Date.now();
+
+  list.forEach((item, idx) => {
+    const blok = String(item.blok || "").trim().toUpperCase();
+    const noRumah = String(item.noRumah || "").trim();
+    const nama = String(item.nama || "").trim();
+    if (!blok || !nama) return; // Lewati jika blok atau nama kosong
+
+    const key = blok + "-" + noRumah;
+    const existingRow = existingMap.get(key);
+
+    const nik = String(item.nik || "-").trim() || "-";
+    const noHp = String(item.noHp || "-").trim() || "-";
+    const statusTinggal = String(item.statusTinggal || "Tetap").trim() || "Tetap";
+    const jumlahAnggota = Number(item.jumlahAnggota) || 1;
+    const keterangan = String(item.keterangan || "-").trim() || "-";
+
+    if (existingRow) {
+      const existingId = existingData[existingRow - 1][0];
+      sh.getRange(existingRow, 1, 1, 9).setValues([[
+        existingId, blok, noRumah, nama, nik, noHp, statusTinggal, jumlahAnggota, keterangan
+      ]]);
+      updated++;
+    } else {
+      const id = "WRG-" + (now + idx);
+      newRows.push([
+        id, blok, noRumah, nama, nik, noHp, statusTinggal, jumlahAnggota, keterangan
+      ]);
+      added++;
+    }
+  });
+
+  if (newRows.length > 0) {
+    sh.getRange(sh.getLastRow() + 1, 1, newRows.length, 9).setValues(newRows);
+  }
+
+  return {
+    success: true,
+    message: "Berhasil mengimpor data warga! " + added + " data baru ditambahkan, " + updated + " data diperbarui.",
+    added: added,
+    updated: updated
+  };
 }
 
 // ============================================================

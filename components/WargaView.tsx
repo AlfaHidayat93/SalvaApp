@@ -12,9 +12,16 @@ import {
   Edit2,
   Trash2,
   Filter,
-  X
+  X,
+  Upload,
+  Download,
+  FileSpreadsheet,
+  AlertCircle,
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 import { Warga, StatusHunian } from '@/lib/types';
+import { downloadWargaCSVTemplate, parseWargaCSV } from '@/lib/api';
 
 interface WargaViewProps {
   wargaList: Warga[];
@@ -22,6 +29,7 @@ interface WargaViewProps {
   isAdmin: boolean;
   onSaveWarga: (warga: Partial<Warga>) => Promise<void>;
   onDeleteWarga: (id: string) => Promise<void>;
+  onImportWarga?: (list: Partial<Warga>[]) => Promise<boolean>;
 }
 
 export default function WargaView({
@@ -30,11 +38,23 @@ export default function WargaView({
   isAdmin,
   onSaveWarga,
   onDeleteWarga,
+  onImportWarga,
 }: WargaViewProps) {
   const [selectedBlok, setSelectedBlok] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editingWarga, setEditingWarga] = useState<Warga | null>(null);
+
+  // CSV Import States
+  const [csvModalOpen, setCsvModalOpen] = useState<boolean>(false);
+  const [csvFileName, setCsvFileName] = useState<string>('');
+  const [csvParsedResult, setCsvParsedResult] = useState<{
+    validRows: Partial<Warga>[];
+    errorCount: number;
+    totalCount: number;
+  } | null>(null);
+  const [isImporting, setIsImporting] = useState<boolean>(false);
+  const [csvError, setCsvError] = useState<string>('');
 
   // Form states
   const [formData, setFormData] = useState<{
@@ -130,6 +150,50 @@ export default function WargaView({
     setModalOpen(false);
   };
 
+  const handleCSVFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCsvFileName(file.name);
+    setCsvError('');
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const res = parseWargaCSV(text);
+        if (res.validRows.length === 0) {
+          setCsvError('Tidak ada data warga yang valid dalam file CSV ini. Pastikan kolom Blok dan Nama terisi.');
+          setCsvParsedResult(null);
+        } else {
+          setCsvParsedResult(res);
+        }
+      } catch (err: any) {
+        setCsvError('Gagal memproses file CSV: ' + err.message);
+        setCsvParsedResult(null);
+      }
+    };
+    reader.onerror = () => {
+      setCsvError('Gagal membaca file CSV.');
+      setCsvParsedResult(null);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleConfirmImport = async () => {
+    if (!csvParsedResult || csvParsedResult.validRows.length === 0 || !onImportWarga) return;
+    setIsImporting(true);
+    try {
+      const ok = await onImportWarga(csvParsedResult.validRows);
+      if (ok) {
+        setCsvModalOpen(false);
+        setCsvParsedResult(null);
+        setCsvFileName('');
+      }
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   // Helper untuk format WhatsApp
   const getWhatsAppLink = (phone: string) => {
     if (!phone || phone === '-') return null;
@@ -152,14 +216,36 @@ export default function WargaView({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           {isAdmin && (
-            <button
-              onClick={openAddModal}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 px-3.5 rounded-xl transition shadow-xs flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" /> Tambah Warga
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={downloadWargaCSVTemplate}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2 px-3 rounded-xl transition border border-slate-300 flex items-center gap-1.5 cursor-pointer"
+                title="Download Template Format CSV"
+              >
+                <Download className="w-3.5 h-3.5 text-indigo-600" /> Unduh Template CSV
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCsvModalOpen(true);
+                  setCsvParsedResult(null);
+                  setCsvFileName('');
+                  setCsvError('');
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3.5 rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <Upload className="w-4 h-4" /> Import CSV
+              </button>
+              <button
+                onClick={openAddModal}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 px-3.5 rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" /> Tambah Warga
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -465,6 +551,175 @@ export default function WargaView({
                 {editingWarga ? 'Simpan Perubahan Warga' : 'Tambahkan Data Warga'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL IMPORT WARGA VIA CSV */}
+      {csvModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-2xl w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                  <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+                  Import Data Warga dari CSV
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  ID warga akan dibuat otomatis oleh sistem tanpa perlu Anda isi manual
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCsvModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Panduan & Tombol Template */}
+            <div className="bg-indigo-50/60 border border-indigo-200/60 rounded-xl p-3.5 text-xs text-indigo-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <p className="font-semibold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
+                  Gunakan format kolom template resmi:
+                </p>
+                <p className="text-[11px] text-indigo-700 mt-0.5 font-mono">
+                  Blok, NoRumah, Nama, NIK, NoHP, StatusTinggal, JumlahAnggota, Keterangan
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={downloadWargaCSVTemplate}
+                className="bg-white hover:bg-indigo-100 text-indigo-700 border border-indigo-300 text-xs font-semibold py-1.5 px-3 rounded-lg transition shrink-0 flex items-center gap-1.5 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" /> Unduh Template CSV
+              </button>
+            </div>
+
+            {/* Input File */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700 block">Pilih File .CSV dari Komputer / HP</label>
+              <div className="border-2 border-dashed border-slate-300 hover:border-indigo-400 bg-slate-50/70 hover:bg-indigo-50/20 rounded-xl p-6 text-center transition cursor-pointer relative">
+                <input
+                  type="file"
+                  accept=".csv,text/csv"
+                  onChange={handleCSVFileChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+                <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <p className="text-xs font-semibold text-slate-700">
+                  {csvFileName ? (
+                    <span className="text-indigo-600 font-bold">{csvFileName}</span>
+                  ) : (
+                    'Klik atau geser file .CSV ke sini'
+                  )}
+                </p>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Mendukung pemisah koma (,) maupun titik koma (;) dari Excel
+                </p>
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {csvError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{csvError}</span>
+              </div>
+            )}
+
+            {/* Preview Data */}
+            {csvParsedResult && (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-700">
+                    Pratinjau Data Warga ({csvParsedResult.validRows.length} baris siap diimpor):
+                  </span>
+                  {csvParsedResult.errorCount > 0 && (
+                    <span className="text-amber-600 text-[11px] font-medium">
+                      ⚠️ {csvParsedResult.errorCount} baris diabaikan (Blok/Nama kosong)
+                    </span>
+                  )}
+                </div>
+
+                <div className="border border-slate-200 rounded-xl overflow-x-auto max-h-56">
+                  <table className="w-full text-left text-xs text-slate-700">
+                    <thead className="bg-slate-100 text-[11px] uppercase tracking-wider font-semibold text-slate-600 sticky top-0">
+                      <tr>
+                        <th className="py-2 px-3">Blok</th>
+                        <th className="py-2 px-3">No</th>
+                        <th className="py-2 px-3">Nama</th>
+                        <th className="py-2 px-3">WhatsApp</th>
+                        <th className="py-2 px-3">Status</th>
+                        <th className="py-2 px-3 text-center">Jiwa</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-[11px]">
+                      {csvParsedResult.validRows.slice(0, 10).map((row, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="py-1.5 px-3 font-mono font-bold text-indigo-700">Blok {row.blok}</td>
+                          <td className="py-1.5 px-3 font-mono">{row.noRumah}</td>
+                          <td className="py-1.5 px-3 font-medium text-slate-800">{row.nama}</td>
+                          <td className="py-1.5 px-3 text-slate-500">{row.noHp || '-'}</td>
+                          <td className="py-1.5 px-3">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 font-semibold text-slate-600">
+                              {row.statusTinggal}
+                            </span>
+                          </td>
+                          <td className="py-1.5 px-3 text-center font-mono">{row.jumlahAnggota}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {csvParsedResult.validRows.length > 10 && (
+                    <div className="py-2 text-center text-[11px] text-slate-400 bg-slate-50 border-t border-slate-100">
+                      ... dan {csvParsedResult.validRows.length - 10} data lainnya
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-[11px] leading-relaxed">
+                    <strong>Catatan:</strong> Jika Blok & No Rumah sudah terdaftar sebelumnya di sistem, data warga tersebut akan otomatis <strong>diperbarui (update)</strong>. Data baru akan otomatis dibuatkan ID warga.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setCsvModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={!csvParsedResult || csvParsedResult.validRows.length === 0 || isImporting}
+                onClick={handleConfirmImport}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold text-white transition flex items-center gap-1.5 shadow-xs cursor-pointer ${
+                  !csvParsedResult || csvParsedResult.validRows.length === 0 || isImporting
+                    ? 'bg-slate-300 cursor-not-allowed'
+                    : 'bg-emerald-600 hover:bg-emerald-700'
+                }`}
+              >
+                {isImporting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Sedang Mengimpor...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    Simpan & Impor {csvParsedResult?.validRows.length ? `(${csvParsedResult.validRows.length} Warga)` : ''}
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
